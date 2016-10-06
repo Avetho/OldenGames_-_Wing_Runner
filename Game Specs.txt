@@ -29,17 +29,79 @@ Game Name:
                      `-^--'                \(-.  `.``-.`-=:-.__)
                                             `  `.`.`._`.-._`--.)
                                                  `-^---^--.`--
+WHAT IS THIS GAME?
+
+You play as a winged creature that has the need to fly, but gets into a bad situation,
+and needs to dodge obstacles that fly it's way. Flying up slows you down, but flying
+down can get you flying faster, and can get you a higher score faster. The level
+speeds up as you go along to a maximum speed, and the highest score will be posted
+after each run to Google Play Games once the app is on the Play Store.
+
 
 Planned Features:
 
-v0.0.1 --- Start the project, get test sprites, and get them to display properly.
+Sprite  - v0.0.10 --- Start the project, get test sprites, and get them to display properly.
 
-v0.0.2 --- Get basic mouse angle calculation done.
+Angle   - v0.0.20 --- Get basic mouse angle calculation done.
 
-v0.0.25 --- Rotate player sprite to mouse angle.
+Rotate  - v0.0.25 --- Rotate player sprite to mouse angle.
 
-v0.0.3 --- Move obstacles from right to left, player on left to dodge them.
+Move    - v0.0.30 --- Move obstacles from right to left, player on left to dodge them.
 
-v0.0.4 --- Make sure sprites can resize to screen.
+Size    - v0.0.40 --- Make sure sprites can resize to screen.
 
-v0.1 --- Get basic movement done.
+Control - v0.0.45 --- Change controls based on device peripherals, touch dominant, unless pc, then mouse.
+
+PC Keys - v0.0.49 --- Allow keyboard control with a targeting reticle in place of mouse cursor or tap location.
+
+Speed I - v0.0.50 --- Keybinds to change game speed on pc, minimum 1x, maximum 5x.
+
+Speedy  - v0.0.55 --- Automatic speed increase by around 0.1x per 30 seconds.
+
+Score   - v0.0.60 --- Calculate score based on average speed, maximum speed, and time survived as such:
+								-avg.speed*time*max speed-
+Skill   - v0.0.65 --- Attempt skills ex. near miss, skip distance, etc.
+
+Slowmo  - v0.0.70 --- Slow player button on screen for mobile, keybind Space on pc.
+
+FastKey - v0.0.80 --- Faster player button on screen mobile, keybind LShift on pc.
+
+GoalKey - v0.0.90 --- Make the scores framework and ready it for Google Play Games.
+
+Final I - v0.1.00 --- Get final basic movement done.
+
+IF MY ALLEGIES HOLD OFF ENOUGH, This is my release shedule:
+-------------------------------------------------------------------------------------
+|  Oct 13 2016 | v0.0.10 - Test sprites, display character on left, obstacles right.|
+-------------------------------------------------------------------------------------
+|  Oct 20 2016 | v0.0.20 - Mouse angle calculation for vertical movement.           |
+-------------------------------------------------------------------------------------
+|  Oct 27 2016 | v0.0.25 - Rotate Player sprite to match angle between mouse-sprite.|
+-------------------------------------------------------------------------------------
+|  Nov 2  2016 | v0.0.30 - Spawn & move obstacles have them despawn just off screen.|
+-------------------------------------------------------------------------------------
+|  Nov 13 2016 | v0.0.40 - Resize sprites to screen size for use on any screen.     |
+-------------------------------------------------------------------------------------
+|  Nov 20 2016 | v0.0.45 - Compatibility for desktop and mouse-only devices.        |
+-------------------------------------------------------------------------------------
+|  Nov 27 2016 | v0.0.49 - Allow keyboard control with target reticle.              |
+-------------------------------------------------------------------------------------
+|  Dec 4  2016 | v0.0.50 - Have the level be able to change speed [pc debug]        |
+-------------------------------------------------------------------------------------
+|  Dec 11 2016 | v0.0.55 - Increment speed by a reasonable amount per 30 seconds.   |
+|              |           This rewards a higher speed throughout gameplay.         |
+-------------------------------------------------------------------------------------
+|  Dec 14 2016 | No Progress Until after January 11th of 2017. I'll be in Cuba.     |
+-------------------------------------------------------------------------------------
+|  Jan 16 2017 | v0.0.60 - Calculate score based on speed and time.                 |
+-------------------------------------------------------------------------------------
+|  Jan 23 2017 | v0.0.65 - Attempt skill gathering. If I fail, no problem.          |
+-------------------------------------------------------------------------------------
+|  Jan 30 2017 | v0.0.70 - Make a button to slow down, like wings forward.          |
+-------------------------------------------------------------------------------------
+|  Feb 6  2017 | v0.0.80 - Make a button to dive faster, like wings in freefall.    |
+-------------------------------------------------------------------------------------
+|  Feb 13 2017 | v0.0.90 - Prep a score-tracking system over Google Play Games.     |
+-------------------------------------------------------------------------------------
+|  Feb 20 2017 | v0.1.00 - Finalize movement and score systems. Ready release v0.1  |
+-------------------------------------------------------------------------------------
