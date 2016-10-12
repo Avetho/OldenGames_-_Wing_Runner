@@ -1,0 +1,44 @@
+ __          ___               _____                             
+ \ \        / (_)             |  __ \                            
+  \ \  /\  / / _ _ __   __ _  | |__) |   _ _ __  _ __   ___ _ __ 
+   \ \/  \/ / | | '_ \ / _` | |  _  / | | | '_ \| '_ \ / _ \ '__|
+    \  /\  /  | | | | | (_| | | | \ \ |_| | | | | | | |  __/ |   
+     \/  \/   |_|_| |_|\__, | |_|  \_\__,_|_| |_|_| |_|\___|_|   
+((                      __/ |                                    
+\\``.                  |___/                                     
+\_`.``-. 
+( `.`.` `._  
+ `._`-.    `._ 
+   \`--.   ,' `. 
+    `--._  `.  .`. 
+     `--.--- `. ` `. 
+         `.--  `;  .`._ 
+           :-   :   ;. `.__,.,__ __ 
+            `\  :       ,-(     ';0`>.
+              `-.`:   ,'   `._ .:  (,-`,
+                 \    ;      ;.  ,: 
+             ,"`-._>-:        ;,'  `---.,---.
+             `>'"  "-`       ,'   "":::::".. `-.
+              `;"'_,  (\`\ _ `:::::::::::'"     `---.
+               `-(_,' -'),)\`.       _      .::::"'  `----._,-"")
+                   \_,': `.-' `-----' `--;-.   `.   ``.`--.____/ 
+                     `-^--'                \(-.  `.``-.`-=:-.__)
+                                            `  `.`.`._`.-._`--.)
+                                                 `-^---^--.`--
+=============================================================================================================================================================
+
+Note 1: Movement Note 1.
+
+-The vertical velocity must be half that of horizintal velocity.
+-The horizontal velocity must be subtracted from when angle is above 0 from horizontal movement direction, and added to when below.
+-The sprite must not rotate beyond 60 degrees.
+-The sprite must ignore user input once gameover condition is true.
+
+=============================================================================================================================================================
+
+Note 2: Movement Note 2.
+
+-The cursor/touch/reticle x psoition is not changable by cursor/touch/horizontal reticle movement.
+-The x position will be divided into the angle in such a way that 30 degrees at double the standard distance is a 60 degree angle.
+
+=============================================================================================================================================================
