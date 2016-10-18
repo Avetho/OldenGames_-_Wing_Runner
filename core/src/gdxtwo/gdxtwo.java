@@ -23,7 +23,8 @@ public class gdxtwo extends ApplicationAdapter implements InputProcessor {
     SpriteBatch batch;
     Texture imgreticle, imgsprite, imgobstacle, imgbackground, imgpause;
     Sprite spReticle, spChar, spObs1, spObs2, spObs3, spBG;
-    int nPosX, nPosY, nCursorX, nCursorY;
+    int nCursorX, nCursorY;
+    float fCharRot, fCharMove, fCharAdditive, fPosX, fPosY;
     boolean isTouch, isPaused;
     private ExtendViewport viewport;
 
@@ -54,13 +55,12 @@ public class gdxtwo extends ApplicationAdapter implements InputProcessor {
         spBG = new Sprite(imgbackground);
         spBG.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         spReticle = new Sprite(imgreticle);
-        spReticle.setSize(5, 5);
-        spReticle.setCenter(spReticle.getWidth() / 2, spReticle.getHeight() / 2);
         spReticle.setOrigin(spReticle.getWidth() / 2, spReticle.getHeight() / 2);
+        spReticle.setSize(Gdx.graphics.getWidth() / 200, Gdx.graphics.getWidth() / 200);
         spChar = new Sprite(imgsprite);
-        spChar.setCenter(spChar.getWidth() / 2, spChar.getHeight() / 2);
-        spChar.setOrigin(spChar.getWidth() / 2, spChar.getHeight() / 2);
+        spChar.setSize(Gdx.graphics.getWidth() / 8, Gdx.graphics.getWidth() / 10);
         Gdx.input.setInputProcessor(this);
+        fPosY = Gdx.graphics.getHeight() / 2;
     }
 
     @Override
@@ -68,20 +68,31 @@ public class gdxtwo extends ApplicationAdapter implements InputProcessor {
         if (Gdx.input.isKeyPressed(Keys.ESCAPE)) {
             System.exit(3);
         }
-        spChar.setRotation(-(45));
+        nCursorX = Gdx.input.getX();
+        nCursorY = Gdx.graphics.getHeight() - Gdx.input.getY();
+        fCharRot = findAngle(fPosX, fPosY, nCursorX, nCursorY);
+        fCharMove = (nCursorY-fPosY)/25;
+        fPosY += fCharMove;
+        spChar.setRotation(fCharRot - 90);
+        fPosX = Gdx.graphics.getWidth() / 5;
         //if(Gdx.input.isKeyPressed(Keys.F11))Gdx.graphics.setDisplayMode(Gdx.graphics.);
         Gdx.gl.glClearColor(0.128f, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        nPosX = Gdx.graphics.getWidth() / 5;
-        nPosY = Gdx.graphics.getHeight() - Gdx.input.getY();//Fix Y coordinate to be a better way of getting mouse/tap Y.
+        fPosX = Gdx.graphics.getWidth() / 5;
         batch.begin();
         batch.draw(spBG, 0, 0);
         batch.draw(spObs1, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 2);
         batch.draw(spObs2, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, Gdx.graphics.getHeight() / 2 - Gdx.graphics.getHeight() / 3);
         batch.draw(spObs3, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 3);
-        batch.draw(spChar, nPosX, nPosY, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
-        batch.draw(spReticle, Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY(), spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
+        batch.draw(spChar, fPosX - (spChar.getWidth() / 2), fPosY - (spChar.getHeight() / 2), spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
+        batch.draw(spReticle, nCursorX - (spReticle.getWidth() / 2), nCursorY - (spReticle.getHeight() / 2), spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
         batch.end();
+    }
+
+    public float findAngle(double dX1, double dY1, double dX2, double dY2) {
+        float fAngle;
+        fAngle = (float) Math.toDegrees(Math.atan2(dY1 - dY2, dX1 - dX2));
+        return fAngle;
     }
 
     @Override
