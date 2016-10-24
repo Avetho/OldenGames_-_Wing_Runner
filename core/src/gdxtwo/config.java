@@ -1,4 +1,4 @@
 package gdxtwo;//@author matts6206
-class config {
+public class config {
     
 }

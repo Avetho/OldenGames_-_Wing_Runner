@@ -16,17 +16,19 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.utils.viewport.*;
 
 public class gdxtwo extends ApplicationAdapter implements InputProcessor {
 
     SpriteBatch batch;
-    Texture imgreticle, imgsprite, imgobstacle, imgbackground, imgpause;
-    Sprite spReticle, spChar, spObs1, spObs2, spObs3, spBG;
+    Texture imgreticle, imgsprite, imgobstacle, imgbackground, imgpause, imgbox;
+    Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox;
     int nCursorX, nCursorY;
     float fCharRot, fCharMove, fCharAdditive, fPosX, fPosY;
-    boolean isTouch, isPaused;
+    boolean isTouch, isPaused, isMenu = true, isMusicOn, isMMusic, isMusicEnable;
     private ExtendViewport viewport;
+    Music menuMusic, bgMusic;
 
     @Override
     public void create() {
@@ -49,44 +51,72 @@ public class gdxtwo extends ApplicationAdapter implements InputProcessor {
         imgsprite = new Texture("characterSprite0.png");
         imgobstacle = new Texture("rockObstacle.png");
         imgbackground = new Texture("imgBG.jpg");
+        imgbox = new Texture("RectBarr.jpg");
+        spBox = new Sprite(imgbox);
+        spBox.setScale(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()/15);
         spObs1 = new Sprite(imgobstacle);
         spObs2 = new Sprite(imgobstacle);
         spObs3 = new Sprite(imgobstacle);
+        spObs4 = new Sprite(imgobstacle);
+        spObs5 = new Sprite(imgobstacle);
         spBG = new Sprite(imgbackground);
         spBG.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         spReticle = new Sprite(imgreticle);
         spReticle.setOrigin(spReticle.getWidth() / 2, spReticle.getHeight() / 2);
         spReticle.setSize(Gdx.graphics.getWidth() / 200, Gdx.graphics.getWidth() / 200);
         spChar = new Sprite(imgsprite);
-        spChar.setSize(Gdx.graphics.getWidth() / 8, Gdx.graphics.getWidth() / 10);
+        spChar.setSize(Gdx.graphics.getWidth() / 12, Gdx.graphics.getWidth() / 15);
         Gdx.input.setInputProcessor(this);
         fPosY = Gdx.graphics.getHeight() / 2;
+        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins.ogg"));
+        bgMusic = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins_loop.ogg"));
     }
 
     @Override
     public void render() {
-        if (Gdx.input.isKeyPressed(Keys.ESCAPE)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
             System.exit(3);
         }
-        nCursorX = Gdx.input.getX();
-        nCursorY = Gdx.graphics.getHeight() - Gdx.input.getY();
-        fCharRot = findAngle(fPosX, fPosY, nCursorX, nCursorY);
-        fCharMove = (nCursorY-fPosY)/25;
-        fPosY += fCharMove;
-        spChar.setRotation(fCharRot - 90);
-        fPosX = Gdx.graphics.getWidth() / 5;
-        //if(Gdx.input.isKeyPressed(Keys.F11))Gdx.graphics.setDisplayMode(Gdx.graphics.);
-        Gdx.gl.glClearColor(0.128f, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        fPosX = Gdx.graphics.getWidth() / 5;
-        batch.begin();
-        batch.draw(spBG, 0, 0);
-        batch.draw(spObs1, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 2);
-        batch.draw(spObs2, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, Gdx.graphics.getHeight() / 2 - Gdx.graphics.getHeight() / 3);
-        batch.draw(spObs3, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 3);
-        batch.draw(spChar, fPosX - (spChar.getWidth() / 2), fPosY - (spChar.getHeight() / 2), spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
-        batch.draw(spReticle, nCursorX - (spReticle.getWidth() / 2), nCursorY - (spReticle.getHeight() / 2), spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
-        batch.end();
+        if (isMenu) {
+            if (menuMusic.isPlaying() == false) {
+                menuMusic.setVolume(0.5f);
+                menuMusic.play();
+                menuMusic.setLooping(true);//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
+            }
+            if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+                menuMusic.setLooping(false);
+                menuMusic.stop();
+                isMenu = false;
+            }
+        } else if (isMenu == false) {
+            if (bgMusic.isPlaying() == false) {
+                bgMusic.setLooping(true);
+                bgMusic.play();//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
+            }
+            nCursorX = Gdx.input.getX();
+            nCursorY = Gdx.graphics.getHeight() - Gdx.input.getY();
+            fCharRot = findAngle(fPosX, fPosY, Gdx.graphics.getWidth() * 2 / 3, nCursorY);
+            fCharMove = (nCursorY - fPosY) / 14;
+            fPosY += fCharMove;
+            spChar.setRotation(fCharRot - 90);
+            fPosX = Gdx.graphics.getWidth() / 5;
+            //if(Gdx.input.isKeyPressed(Keys.F11))Gdx.graphics.setDisplayMode(Gdx.graphics.);
+            Gdx.gl.glClearColor(0.128f, 0, 0, 1);
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+            fPosX = Gdx.graphics.getWidth() / 5;
+            batch.begin();
+            batch.draw(spBG, 0, 0);
+            batch.draw(spBox, 0, Gdx.graphics.getHeight());
+            batch.draw(spBox, 0, 0);
+            batch.draw(spObs1, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4 - spObs1.getHeight() / 2);
+            batch.draw(spObs2, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, Gdx.graphics.getHeight() / 2 - spObs2.getHeight() / 2);
+            batch.draw(spObs3, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, Gdx.graphics.getHeight() / 2 - Gdx.graphics.getHeight() / 4 - spObs3.getHeight() / 2);
+            //batch.draw(spObs4, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
+            //batch.draw(spObs5, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
+            batch.draw(spChar, fPosX - spChar.getWidth() / 2, fPosY - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
+            batch.draw(spReticle, Gdx.graphics.getWidth() * 2 / 3, nCursorY - spReticle.getHeight() / 2, spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
+            batch.end();
+        }
     }
 
     public float findAngle(double dX1, double dY1, double dX2, double dY2) {
