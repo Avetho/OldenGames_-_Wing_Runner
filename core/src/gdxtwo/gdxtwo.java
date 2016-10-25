@@ -26,9 +26,10 @@ public class gdxtwo extends ApplicationAdapter implements InputProcessor {
     Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox;
     int nCursorX, nCursorY;
     float fCharRot, fCharMove, fCharAdditive, fPosX, fPosY;
-    boolean isTouch, isPaused, isMenu = true, isMusicOn, isMMusic, isMusicEnable;
+    boolean isTouch, isPaused, isMenu = true, isMusicOn, isMMusic, isMusicEnable, isMusicClassic = false;
     private ExtendViewport viewport;
-    Music menuMusic, bgMusic;
+    Music menuMusic, bgMusic, menuMusicM, menuMusicC, bgMusicM, bgMusicC;
+    gdxtwo game;
 
     @Override
     public void create() {
@@ -48,7 +49,7 @@ public class gdxtwo extends ApplicationAdapter implements InputProcessor {
         batch = new SpriteBatch();
         imgpause = new Texture("pausedImg.png");
         imgreticle = new Texture("badlogic.jpg");
-        imgsprite = new Texture("characterSprite0.png");
+        imgsprite = new Texture("characterSprite.png");
         imgobstacle = new Texture("rockObstacle.png");
         imgbackground = new Texture("imgBG.jpg");
         imgbox = new Texture("RectBarr.jpg");
@@ -57,28 +58,38 @@ public class gdxtwo extends ApplicationAdapter implements InputProcessor {
         spObs1 = new Sprite(imgobstacle);
         spObs2 = new Sprite(imgobstacle);
         spObs3 = new Sprite(imgobstacle);
-        spObs4 = new Sprite(imgobstacle);
-        spObs5 = new Sprite(imgobstacle);
+        //spObs4 = new Sprite(imgobstacle);
+        //spObs5 = new Sprite(imgobstacle);
         spBG = new Sprite(imgbackground);
         spBG.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         spReticle = new Sprite(imgreticle);
         spReticle.setOrigin(spReticle.getWidth() / 2, spReticle.getHeight() / 2);
         spReticle.setSize(Gdx.graphics.getWidth() / 200, Gdx.graphics.getWidth() / 200);
         spChar = new Sprite(imgsprite);
-        spChar.setSize(Gdx.graphics.getWidth() / 12, Gdx.graphics.getWidth() / 15);
+        spChar.setCenter(spChar.getWidth(), spChar.getHeight());
+        spChar.setSize(Gdx.graphics.getWidth() / 5, Gdx.graphics.getWidth() / 15);
         Gdx.input.setInputProcessor(this);
         fPosY = Gdx.graphics.getHeight() / 2;
-        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins.ogg"));
-        bgMusic = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins_loop.ogg"));
+        menuMusicM = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins.ogg"));
+        bgMusicM = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins_loop.ogg"));
+        menuMusicC = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins.ogg"));
+        bgMusicC = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins_loop.ogg"));
+        menuMusic = menuMusicM;
+        bgMusic = bgMusicM;
     }
 
     @Override
     public void render() {
-        if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
-            System.exit(3);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+            if (isMenu == false) {
+                isMenu = true;
+            } else {
+                System.exit(3);
+            }
         }
         if (isMenu) {
             if (menuMusic.isPlaying() == false) {
+                bgMusic.stop();
                 menuMusic.setVolume(0.5f);
                 menuMusic.play();
                 menuMusic.setLooping(true);//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
@@ -87,6 +98,19 @@ public class gdxtwo extends ApplicationAdapter implements InputProcessor {
                 menuMusic.setLooping(false);
                 menuMusic.stop();
                 isMenu = false;
+            } else if (Gdx.input.isKeyJustPressed(Input.Buttons.RIGHT)) {
+                menuMusic.stop();
+                bgMusic.stop();
+                if(isMusicClassic == false) {
+                    menuMusic = menuMusicC;
+                    bgMusic = bgMusicC;
+                    isMusicClassic = true;
+                } else {
+                    menuMusic = menuMusicM;
+                    bgMusic = bgMusicM;
+                    isMusicClassic = false;
+                }
+                menuMusic.play();
             }
         } else if (isMenu == false) {
             if (bgMusic.isPlaying() == false) {
@@ -104,6 +128,8 @@ public class gdxtwo extends ApplicationAdapter implements InputProcessor {
             Gdx.gl.glClearColor(0.128f, 0, 0, 1);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             fPosX = Gdx.graphics.getWidth() / 5;
+            //batch.setTransformMatrix(game.getCamera().view);
+            //batch.setProjectionMatrix(game.getCamera().projection);
             batch.begin();
             batch.draw(spBG, 0, 0);
             batch.draw(spBox, 0, Gdx.graphics.getHeight());
@@ -128,24 +154,19 @@ public class gdxtwo extends ApplicationAdapter implements InputProcessor {
     @Override
     public void resize(int width, int height) {
         // viewport must be updated for it to work properly
-        //viewport.update(width, height, true);
+        //viewport.update(width, height);
+        //camera.update();
+    }
+    
+    @Override
+    public void dispose() {
+        //img.dispose();
+        //item.dispose();
     }
 
     @Override
     public boolean keyDown(int i) {
-        /*if (Input == Keys.ESCAPE) {
-         return true;//This senses Escape key to exit program.
-         }
-         if (Input.Buttons == Keys.F11) {
-         if (config.fullscreen == false) {
-         Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayModes());
-         } else {
-         config.fullscreen = false;
-         }
-         return true;
-         } else {*/
         return false;
-        //}
     }
 
     @Override
