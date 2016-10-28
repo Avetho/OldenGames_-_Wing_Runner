@@ -42,3 +42,19 @@ Note 2: Movement Note 2.
 -The x position will be divided into the angle in such a way that 30 degrees at double the standard distance is a 60 degree angle.
 
 =============================================================================================================================================================
+
+Note 3: Rock Y-Locks.
+
+-The rocks will have their y positions locked to three "rails".
+-The rails will be calculated by the window height with three short formulas.
+-Top Rail :: Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4 - spObs1.getHeight() / 2;
+-Top Center Rail :: N/A
+-Center Rail :: Gdx.graphics.getHeight() / 2 - spObs2.getHeight() / 2;
+-Bottom Center Rail :: N/A
+-Bottom Rail :: Gdx.graphics.getHeight() / 2 - Gdx.graphics.getHeight() / 4 - spObs3.getHeight() / 2;
+
+=============================================================================================================================================================
+
+Note 4: Player Movement Butterfly Effect.
+
+-When the player tilts upwards, the rocks must move a tad slower to avoid the player not being able to go upwards
