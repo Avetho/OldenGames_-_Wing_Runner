@@ -29,11 +29,11 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     SpriteBatch batch;
     Texture imgReticle, imgSprite, imgObstacle, imgBg, imgPause, imgBox, imgMenu;
     Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG;
-    int nCursorX, nCursorY, nWindW, nWindH, nRockX1 = 300, nRockX2 = 300, nRockX3 = 300;
+    int nCursorX, nCursorY, nWindW, nWindH, nRockX1 = -90, nRockX2 = -60, nRockX3 = -30;
     float fCharRot, fCharMove, fCharAdditive, fPosX, fPosY;
     boolean isTouch, isPaused, isMenu = true, isMusicOn, isMMusic, isMusicEnable, isMusicClassic = false;
     private ExtendViewport viewport;
-    Music menuMusic, bgMusic, menuMusicM, menuMusicC, bgMusicM, bgMusicC;
+    Music menuMusic, bgMusic, menuMusicFly, menuMusicSci, bgMusicFly, bgMusicSci;
     GameCore game;
     EntityPlayer objPlayer;
 
@@ -67,11 +67,8 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         spBox = new Sprite(imgBox);
         spBox.setScale(nWindW, nWindH/15);
         spObs1 = new Sprite(imgObstacle);
-        spObs1.setScale(2, 2);
         spObs2 = new Sprite(imgObstacle);
-        spObs2.setScale(2, 2);
         spObs3 = new Sprite(imgObstacle);
-        spObs3.setScale(2, 2);
         //spObs4 = new Sprite(imgobstacle);
         //spObs5 = new Sprite(imgobstacle);
         spBG = new Sprite(imgBg);
@@ -84,12 +81,12 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         spChar.setSize(nWindW / 12/*5*/, nWindW / 15);
         Gdx.input.setInputProcessor(this);
         fPosY = nWindH / 2;
-        menuMusicM = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins.ogg"));
-        bgMusicM = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins_loop.ogg"));
-        menuMusicC = Gdx.audio.newMusic(Gdx.files.internal("lucs-200th_floor.ogg"));//Hint next time:
-        bgMusicC = Gdx.audio.newMusic(Gdx.files.internal("Astrum-Wormhole.ogg"));//Dont make track sets the same!
-        menuMusic = menuMusicM;
-        bgMusic = bgMusicM;
+        menuMusicFly = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins.ogg"));
+        bgMusicFly = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins_loop.ogg"));
+        menuMusicSci = Gdx.audio.newMusic(Gdx.files.internal("lucs-200th_floor.ogg"));//Hint next time:
+        bgMusicSci = Gdx.audio.newMusic(Gdx.files.internal("Astrum-Wormhole.ogg"));//Dont make track sets the same!
+        menuMusic = menuMusicFly;
+        bgMusic = bgMusicFly;
         objPlayer = new EntityPlayer();
     }
 
@@ -104,17 +101,15 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         }
         if (isMenu) {
             batch.begin();
-            batch.draw(imgMenu, 0, 0);
+            batch.draw(imgMenu, 0, 0, nWindW, nWindH);
             batch.end();
             if (menuMusic.isPlaying() == false) {
                 bgMusic.stop();
-                menuMusic.setVolume(2f);
                 menuMusic.play();
                 menuMusic.setLooping(true);//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
             }
             if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
                 menuMusic.setLooping(false);
-                menuMusic.setVolume(2f);
                 menuMusic.stop();
                 isMenu = false;
             }
@@ -137,7 +132,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             //batch.setTransformMatrix(game.getCamera().view);
             //batch.setProjectionMatrix(game.getCamera().projection);
             batch.begin();
-            batch.draw(spBG, 0, 0);
+            batch.draw(spBG, 0, 0, nWindW, nWindH);
             batch.draw(spBox, 0, nWindH);
             batch.draw(spBox, 0, 0);
             batch.draw(spObs1, nRockX1, nWindH - nWindH / 4 - spObs1.getHeight() / 2 + nWindH / 12);
@@ -147,22 +142,22 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             //batch.draw(spObs5, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
             batch.draw(spChar, fPosX - spChar.getWidth() / 2, fPosY - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
             //batch.draw(spChar, fPosX - spChar.getWidth() / 2, fPosY - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
-            if(mouseMoved(1, 1))batch.draw(spReticle, nWindW * 2 / 3, nCursorY - spReticle.getHeight() / 2, spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
+            batch.draw(spReticle, nWindW * 2 / 3, nCursorY - spReticle.getHeight() / 2, spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
             batch.end();
             fCharMove += nWindH/252;
-            if(nRockX1 > 0) {
+            if(nRockX1 > -spObs1.getWidth()) {
                 nRockX1-=dR1S;
             } else {
                 dR1S = (rand.nextDouble()+1)*8;
                 nRockX1 = nWindW + nWindW/10;
             }
-            if(nRockX2 > 0) {
+            if(nRockX2 > -spObs2.getWidth()) {
                 nRockX2-=dR2S;
             } else {
                 dR2S = (rand.nextDouble()+1)*8;
                 nRockX2 = nWindW + nWindW/10;
             }
-            if(nRockX3 > 0) {
+            if(nRockX3 > -spObs3.getWidth()) {
                 nRockX3-=dR3S;
             } else {
                 dR3S = (rand.nextDouble()+1)*8;
@@ -173,15 +168,15 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 menuMusic.stop();
                 bgMusic.stop();
                 if(isMusicClassic) {
-                    menuMusic = menuMusicM;
+                    menuMusic = menuMusicFly;
                     menuMusic.setVolume(2f);
-                    bgMusic = bgMusicM;
+                    bgMusic = bgMusicFly;
                     bgMusic.setVolume(2f);
                     isMusicClassic = false;
                 } else {
-                    menuMusic = menuMusicC;
+                    menuMusic = menuMusicSci;
                     menuMusic.setVolume(0.2f);
-                    bgMusic = bgMusicC;
+                    bgMusic = bgMusicSci;
                     bgMusic.setVolume(0.2f);
                     isMusicClassic = true;
                 }
