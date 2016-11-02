@@ -25,11 +25,15 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     //Temp Variables
     double dR1S = 1, dR2S = 1, dR3S = 1;
     
+    Vector2 vChar = new Vector2();
+    Vector2 vObs1 = new Vector2();
+    Vector2 vObs2 = new Vector2();
+    Vector2 vObs3 = new Vector2();
     Random rand = new Random();
     SpriteBatch batch;
     Texture imgReticle, imgSprite, imgObstacle, imgBg, imgPause, imgBox, imgMenu;
     Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG;
-    int nCursorX, nCursorY, nWindW, nWindH, nRockX1 = -90, nRockX2 = -60, nRockX3 = -30;
+    int nCursorX, nCursorY, nWindW, nWindH, nRockX1 = -900, nRockX2 = -600, nRockX3 = -300;
     float fCharRot, fCharMove, fCharAdditive, fPosX, fPosY;
     boolean isTouch, isPaused, isMenu = true, isMusicOn, isMMusic, isMusicEnable, isMusicClassic = false;
     private ExtendViewport viewport;
@@ -88,6 +92,9 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         menuMusic = menuMusicFly;
         bgMusic = bgMusicFly;
         objPlayer = new EntityPlayer();
+        vObs1.add(0, nWindH - nWindH / 4 - spObs1.getHeight() / 2 + nWindH / 12);
+        vObs2.add(0, nWindH / 2 - spObs2.getHeight() / 2);
+        vObs3.add(0, nWindH / 2 - nWindH / 4 - spObs3.getHeight() / 2 - nWindH / 12);
     }
 
     @Override
@@ -122,7 +129,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             nCursorY = nWindH - Gdx.input.getY();
             fCharRot = findAngle(fPosX, fPosY, nWindW * 2 / 3, nCursorY);
             fCharMove = (nCursorY - fPosY) / 13;
-            fPosY += fCharMove;
+            vChar.add(0, fCharMove);
             spChar.setRotation(fCharRot - 90);
             fPosX = nWindW / 5;
             //if(Gdx.input.isKeyPressed(Keys.F11))Gdx.graphics.setDisplayMode(Gdx.graphics.);
@@ -135,9 +142,9 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             batch.draw(spBG, 0, 0, nWindW, nWindH);
             batch.draw(spBox, 0, nWindH);
             batch.draw(spBox, 0, 0);
-            batch.draw(spObs1, nRockX1, nWindH - nWindH / 4 - spObs1.getHeight() / 2 + nWindH / 12);
-            batch.draw(spObs2, nRockX2, nWindH / 2 - spObs2.getHeight() / 2);
-            batch.draw(spObs3, nRockX3, nWindH / 2 - nWindH / 4 - spObs3.getHeight() / 2 - nWindH / 12);
+            batch.draw(spObs1, vObs1.x, vObs1.y);
+            batch.draw(spObs2, vObs2.x, vObs2.y);
+            batch.draw(spObs3, vObs3.x, vObs3.y);
             //batch.draw(spObs4, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
             //batch.draw(spObs5, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
             batch.draw(spChar, fPosX - spChar.getWidth() / 2, fPosY - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
@@ -146,19 +153,22 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             batch.end();
             fCharMove += nWindH/252;
             if(nRockX1 > -spObs1.getWidth()) {
-                nRockX1-=dR1S;
+                //nRockX1-=dR1S;
+                vObs1.x -= dR1S;
             } else {
                 dR1S = (rand.nextDouble()+1)*8;
                 nRockX1 = nWindW + nWindW/10;
             }
             if(nRockX2 > -spObs2.getWidth()) {
-                nRockX2-=dR2S;
+                //nRockX2-=dR2S;
+                vObs2.x -= dR2S;
             } else {
                 dR2S = (rand.nextDouble()+1)*8;
                 nRockX2 = nWindW + nWindW/10;
             }
             if(nRockX3 > -spObs3.getWidth()) {
-                nRockX3-=dR3S;
+                //nRockX3-=dR3S;
+                vObs3.x -= dR3S;
             } else {
                 dR3S = (rand.nextDouble()+1)*8;
                 nRockX3 = nWindW + nWindW/10;
