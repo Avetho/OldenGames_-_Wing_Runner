@@ -19,6 +19,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.utils.viewport.*;
 import java.util.Random;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class GameCore extends ApplicationAdapter implements InputProcessor {
 
@@ -32,23 +33,23 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     Vector2 vRet = new Vector2();
     Random rand = new Random();
     SpriteBatch batch;
-    Texture imgReticle, imgSprite, imgObstacle, imgBg, imgPause, imgBox, imgMenu;
-    Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG;
-    int nCursorX, nCursorY, nWindW, nWindH, nRockX1 = -900, nRockX2 = -600, nRockX3 = -300;
-    float fCharRot, fCharMove, fCharAdditive, fPosX, fPosY;
+    ShapeRenderer renderHB;
+    Texture imgReticle, imgSprite, imgSprite2, imgObstacle, imgObstacle2, imgBg, imgBg2, imgPause, imgBox, imgMenu, imgStart, imgMusic;
+    Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG, spStart, spMusic;
+    int nCursorX, nCursorY, nWindW, nWindH, nRockX1 = 2500, nRockX2 = 2500, nRockX3 = 2500;
+    float fCharRot, fCharMove, fCharAdditive, fPosX;
     boolean isTouch, isPaused, isMenu = true, isMusicOn, isMMusic, isMusicEnable, isMusicClassic = false;
     private ExtendViewport viewport;
     Music menuMusic, bgMusic, menuMusicFly, menuMusicSci, bgMusicFly, bgMusicSci;
     GameCore game;
     EntityPlayer objPlayer;
     float fbgX = 0;
+    OrthographicCamera camera;
 
     @Override
     public void create() {
         nWindW = Gdx.graphics.getWidth();
         nWindH = Gdx.graphics.getHeight();
-        OrthographicCamera camera = new OrthographicCamera(nWindW, nWindH);
-        camera.setToOrtho(true, nWindW, nWindH);
         if (Gdx.app.getType() == ApplicationType.Android) {
             int ANDROID_WIDTH = nWindW;
             int ANDROID_HEIGHT = nWindH;
@@ -65,10 +66,15 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         imgMenu = new Texture("Main_Menu.png");
         imgPause = new Texture("pausedImg.png");
         imgReticle = new Texture("badlogic.jpg");
-        imgSprite = new Texture("characterSprite0.png");
-        imgObstacle = new Texture("rockObstacleL.png");
-        imgBg = new Texture("imgBG.jpg");
+        imgSprite = new Texture("characterSprite1.png");
+        imgSprite2 = new Texture("characterSprite0.png");
+        imgObstacle = new Texture("rockObstacleL2.png");
+        imgObstacle2 = new Texture("rockObstacleL.png");
+        imgBg = new Texture("imgBG2.jpg");
+        imgBg2 = new Texture("imgBG.jpg");
         imgBox = new Texture("RectBarr.jpg");
+        imgStart = new Texture("StartButton.png");
+        imgMusic = new Texture("MusicButton.png");
         spMenuBG = new Sprite(imgMenu);
         spMenuBG.setSize(nWindW, nWindH);
         spBox = new Sprite(imgBox);
@@ -85,9 +91,8 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         spReticle.setSize(nWindW / 200, nWindW / 200);
         spChar = new Sprite(imgSprite);
         spChar.setCenter(spChar.getWidth(), spChar.getHeight());
-        spChar.setSize(nWindW / 12/*5*/, nWindW / 15);
+        spChar.setSize(nWindH / 12/*5*/, nWindH / 15);
         Gdx.input.setInputProcessor(this);
-        fPosY = nWindH / 2;
         menuMusicFly = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins.ogg"));
         bgMusicFly = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins_loop.ogg"));
         menuMusicSci = Gdx.audio.newMusic(Gdx.files.internal("lucs-200th_floor.ogg"));//Hint next time:
@@ -96,6 +101,9 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         bgMusic = bgMusicFly;
         objPlayer = new EntityPlayer();
         vRet.set(nWindW * 2 / 3, nWindH / 2);
+        dR1S = (rand.nextDouble()+1)*12;
+        dR2S = (rand.nextDouble()+1)*12;
+        dR3S = (rand.nextDouble()+1)*12;
     }
 
     @Override
@@ -126,6 +134,24 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 bgMusic.setLooping(true);
                 bgMusic.play();//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
             }
+            /*camera.update();
+            renderHB.setProjectionMatrix(camera.combined);
+            renderHB.begin(renderHB.ShapeType.Line);
+            renderHB.setColor(0, 0, 0, 0);
+            renderHB.circle(vObs1.x - spObs1.getWidth()/2, vObs1.y - spObs1.getHeight()/2, spObs1.getHeight()/2);
+            renderHB.circle(vObs2.x - spObs2.getWidth()/2, vObs2.y - spObs2.getHeight()/2, spObs2.getHeight()/2);
+            renderHB.circle(vObs3.x - spObs3.getWidth()/2, vObs3.y - spObs3.getHeight()/2, spObs3.getHeight()/2);
+            renderHB.circle(vChar.x - spChar.getWidth()/2, vChar.y - spChar.getHeight()/2, spChar.getHeight()/2);
+            renderHB.end();*/
+            /*if(spChar.getBoundingRectangle().overlaps(spObs1.getBoundingRectangle()) || 
+                    spChar.getBoundingRectangle().overlaps(spObs2.getBoundingRectangle()) || 
+                    spChar.getBoundingRectangle().overlaps(spObs3.getBoundingRectangle())) {
+                isMenu=true;
+                vChar.set(fPosX - spChar.getWidth() / 2, nWindH / 2);
+                vObs1.add(nWindW, 0);
+                vObs2.add(nWindW, 0);
+                vObs3.add(nWindW, 0);
+            }*/
             //nCursorX = Gdx.input.getX();
             nCursorY = nWindH - Gdx.input.getY();
             //fCharRot = findAngle(fPosX, fPosY, nWindW * 2 / 3, nCursorY);
@@ -134,7 +160,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             vChar.add(0, fCharMove);
             spChar.setRotation(fCharRot);
             fPosX = nWindW / 5;
-            vRet.set(0, nCursorY - spReticle.getHeight() / 2);
+            vRet.set(nWindW * 2 / 3, nCursorY - spReticle.getHeight() / 2);
             //if(Gdx.input.isKeyPressed(Keys.F11))Gdx.graphics.setDisplayMode(Gdx.graphics.);
             Gdx.gl.glClearColor(0.128f, 0, 0, 1);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -144,8 +170,8 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             batch.begin();
             batch.draw(spBG, fbgX, 0, nWindW, nWindH);
             batch.draw(spBG, fbgX + nWindW, 0, nWindW, nWindH);
-            fbgX--;
-            if(fbgX < -spBG.getWidth()) {
+            fbgX-=3;
+            if(fbgX < -nWindW) {
                 fbgX=0;
             }
             batch.draw(spBox, 0, nWindH);
@@ -164,7 +190,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 //nRockX1-=dR1S;
                 vObs1.sub((float)dR1S, 0);
             } else {
-                dR1S = (rand.nextDouble()+1)*12;
+                dR1S = (rand.nextDouble()+1)*8;
                 //nRockX1 = nWindW + nWindW/10;
                 vObs1.set(nWindW + nWindW/10, 0);
             }
@@ -172,7 +198,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 //nRockX2-=dR2S;
                 vObs2.sub((float)dR2S, 0);
             } else {
-                dR2S = (rand.nextDouble()+1)*12;
+                dR2S = (rand.nextDouble()+1)*10;
                 //nRockX2 = nWindW + nWindW/10;
                 vObs2.set(nWindW + nWindW/10, 0);
             }
@@ -192,12 +218,26 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 menuMusic.stop();
                 bgMusic.stop();
                 if(isMusicClassic) {
+                    spChar = new Sprite(imgSprite);
+                    spChar.setSize(nWindH / 12/*5*/, nWindH / 15);
+                    spObs1 = new Sprite(imgObstacle);
+                    spObs2 = new Sprite(imgObstacle);
+                    spObs3 = new Sprite(imgObstacle);
+                    spBG = new Sprite(imgBg);
+                    spBG.setSize(nWindW, nWindH);
                     menuMusic = menuMusicFly;
                     menuMusic.setVolume(2f);
                     bgMusic = bgMusicFly;
                     bgMusic.setVolume(2f);
                     isMusicClassic = false;
                 } else {
+                    spChar = new Sprite(imgSprite2);
+                    spChar.setSize(nWindH / 12/*5*/, nWindH / 15);
+                    spObs1 = new Sprite(imgObstacle2);
+                    spObs2 = new Sprite(imgObstacle2);
+                    spObs3 = new Sprite(imgObstacle2);
+                    spBG = new Sprite(imgBg2);
+                    spBG.setSize(nWindW, nWindH);
                     menuMusic = menuMusicSci;
                     menuMusic.setVolume(0.2f);
                     bgMusic = bgMusicSci;
@@ -215,8 +255,10 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
 
     public float findAngle2(Vector2 vObj1, Vector2 vObj2) {
         float fAngle;
+        //System.out.println(vObj1.y - vObj2.y);
+        //System.out.println(vObj1.x - vObj2.x);
         fAngle = (float) Math.toDegrees(Math.atan2(vObj1.y - vObj2.y, vObj1.x - vObj2.x));
-        return fAngle;
+        return fAngle - 90;
     }
 
     @Override
