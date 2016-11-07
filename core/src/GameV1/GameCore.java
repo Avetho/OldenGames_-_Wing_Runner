@@ -20,12 +20,14 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.utils.viewport.*;
 import java.util.Random;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import java.awt.geom.Ellipse2D;
 
 public class GameCore extends ApplicationAdapter implements InputProcessor {
 
     //Temp Variables
     double dR1S = 1, dR2S = 1, dR3S = 1;
-    
+    Ellipse2D elHB1, elHB2, elHB3, elHBP;
     Vector2 vChar = new Vector2();
     Vector2 vObs1 = new Vector2();
     Vector2 vObs2 = new Vector2();
@@ -36,7 +38,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     ShapeRenderer renderHB;
     Texture imgReticle, imgSprite, imgSprite2, imgObstacle, imgObstacle2, imgBg, imgBg2, imgPause, imgBox, imgMenu, imgStart, imgMusic;
     Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG, spStart, spMusic;
-    int nCursorX, nCursorY, nWindW, nWindH, nRockX1 = 2500, nRockX2 = 2500, nRockX3 = 2500;
+    int nCursorX, nCursorY, nWindW, nWindH, nRockX1, nRockX2, nRockX3, nScore;
     float fCharRot, fCharMove, fCharAdditive, fPosX;
     boolean isTouch, isPaused, isMenu = true, isMusicOn, isMMusic, isMusicEnable, isMusicClassic = false;
     private ExtendViewport viewport;
@@ -48,9 +50,13 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public void create() {
+        nScore = 0;
         nWindW = Gdx.graphics.getWidth();
         nWindH = Gdx.graphics.getHeight();
-        if (Gdx.app.getType() == ApplicationType.Android) {
+        nRockX1 = nWindW * 3;
+        nRockX2 = nWindW * 6;
+        nRockX3 = nWindW * 9;
+        /*if (Gdx.app.getType() == ApplicationType.Android) {
             int ANDROID_WIDTH = nWindW;
             int ANDROID_HEIGHT = nWindH;
             camera = new OrthographicCamera(ANDROID_WIDTH, ANDROID_HEIGHT);
@@ -61,8 +67,13 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             camera.setToOrtho(false, nWindW, nWindH);
             camera.translate(nWindW / 2, nWindH / 2);
             camera.update();
-        }
+        }*/
+            camera = new OrthographicCamera(nWindW, nWindH);
+            camera.setToOrtho(false, nWindW, nWindH);
+            camera.translate(nWindW / 2, nWindH / 2);
+            camera.update();
         batch = new SpriteBatch();
+        renderHB = new ShapeRenderer();
         imgMenu = new Texture("Main_Menu.png");
         imgPause = new Texture("pausedImg.png");
         imgReticle = new Texture("badlogic.jpg");
@@ -130,28 +141,11 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 isMenu = false;
             }
         } else if (isMenu == false) {
+            nScore++;
             if (bgMusic.isPlaying() == false) {
                 bgMusic.setLooping(true);
                 bgMusic.play();//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
             }
-            /*camera.update();
-            renderHB.setProjectionMatrix(camera.combined);
-            renderHB.begin(renderHB.ShapeType.Line);
-            renderHB.setColor(0, 0, 0, 0);
-            renderHB.circle(vObs1.x - spObs1.getWidth()/2, vObs1.y - spObs1.getHeight()/2, spObs1.getHeight()/2);
-            renderHB.circle(vObs2.x - spObs2.getWidth()/2, vObs2.y - spObs2.getHeight()/2, spObs2.getHeight()/2);
-            renderHB.circle(vObs3.x - spObs3.getWidth()/2, vObs3.y - spObs3.getHeight()/2, spObs3.getHeight()/2);
-            renderHB.circle(vChar.x - spChar.getWidth()/2, vChar.y - spChar.getHeight()/2, spChar.getHeight()/2);
-            renderHB.end();*/
-            /*if(spChar.getBoundingRectangle().overlaps(spObs1.getBoundingRectangle()) || 
-                    spChar.getBoundingRectangle().overlaps(spObs2.getBoundingRectangle()) || 
-                    spChar.getBoundingRectangle().overlaps(spObs3.getBoundingRectangle())) {
-                isMenu=true;
-                vChar.set(fPosX - spChar.getWidth() / 2, nWindH / 2);
-                vObs1.add(nWindW, 0);
-                vObs2.add(nWindW, 0);
-                vObs3.add(nWindW, 0);
-            }*/
             //nCursorX = Gdx.input.getX();
             nCursorY = nWindH - Gdx.input.getY();
             //fCharRot = findAngle(fPosX, fPosY, nWindW * 2 / 3, nCursorY);
@@ -166,25 +160,11 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             fPosX = nWindW / 5;
             //batch.setTransformMatrix(game.getCamera().view);
-            //batch.setProjectionMatrix(game.getCamera().projection);
-            batch.begin();
-            batch.draw(spBG, fbgX, 0, nWindW, nWindH);
-            batch.draw(spBG, fbgX + nWindW, 0, nWindW, nWindH);
+            //camera.update();
             fbgX-=3;
             if(fbgX < -nWindW) {
                 fbgX=0;
             }
-            batch.draw(spBox, 0, nWindH);
-            batch.draw(spBox, 0, 0);
-            batch.draw(spObs1, vObs1.x, vObs1.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
-            batch.draw(spObs2, vObs2.x, vObs2.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
-            batch.draw(spObs3, vObs3.x, vObs3.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
-            //batch.draw(spObs4, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
-            //batch.draw(spObs5, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
-            batch.draw(spChar, fPosX - spChar.getWidth() / 2, vChar.y - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
-            //batch.draw(spChar, fPosX - spChar.getWidth() / 2, fPosY - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
-            batch.draw(spReticle, vRet.x, vRet.y, spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
-            batch.end();
             fCharMove += nWindH/252;
             if(vObs1.x > -spObs1.getWidth()) {
                 //nRockX1-=dR1S;
@@ -213,6 +193,52 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             vObs1.set(vObs1.x, nWindH - nWindH / 4 - spObs1.getHeight() / 2 + nWindH / 12);
             vObs2.set(vObs2.x, nWindH / 2 - spObs2.getHeight() / 2);
             vObs3.set(vObs3.x, nWindH / 2 - nWindH / 4 - spObs3.getHeight() / 2 - nWindH / 12);
+            elHB1.setFrame(vObs1.x, vObs1.y, spObs1.getWidth(), spObs1.getWidth());
+            elHB2.setFrame(vObs2.x, vObs2.y, spObs2.getWidth(), spObs2.getWidth());
+            elHB3.setFrame(vObs3.x, vObs3.y, spObs3.getWidth(), spObs3.getWidth());
+            elHBP.setFrame(vChar.x, vChar.y, spChar.getHeight(), spChar.getHeight());
+            
+            ////////////////////////////////////////
+            
+            if(elHBP.getCenterX()-elHB1.getCenterX()<elHB1.getWidth() ||
+                    elHBP.getCenterX()-elHB2.getCenterX()<elHB2.getWidth() ||
+                    elHBP.getCenterX()-elHB3.getCenterX()<elHB3.getWidth()) {
+                if(elHBP.getCenterY()-elHB1.getCenterY()<elHB1.getHeight() ||
+                    elHBP.getCenterY()-elHB2.getCenterY()<elHB2.getHeight() ||
+                    elHBP.getCenterY()-elHB3.getCenterY()<elHB3.getHeight()) {
+                    isMenu=true;
+                    System.out.println(nScore);
+                    create();
+                }
+            }
+            
+            ////////////////////////////////////////
+            
+            batch.begin();
+            //batch.setProjectionMatrix(camera.combined);
+
+            batch.draw(spBG, fbgX, 0, nWindW, nWindH);
+            batch.draw(spBG, fbgX + nWindW, 0, nWindW, nWindH);
+            batch.draw(spBox, 0, nWindH);
+            batch.draw(spBox, 0, 0);
+            batch.draw(spObs1, vObs1.x, vObs1.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
+            batch.draw(spObs2, vObs2.x, vObs2.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
+            batch.draw(spObs3, vObs3.x, vObs3.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
+            //batch.draw(spObs4, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
+            //batch.draw(spObs5, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
+            batch.draw(spChar, fPosX - spChar.getWidth() / 2, vChar.y - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
+            //batch.draw(spChar, fPosX - spChar.getWidth() / 2, fPosY - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
+            batch.draw(spReticle, vRet.x, vRet.y, spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
+            //batch.end();
+            
+            batch.end();
+            /*renderHB.begin(ShapeType.Line);
+            renderHB.setColor(0, 0, 0, 0);
+            renderHB.circle(vObs1.x - spObs1.getWidth()/2, vObs1.y - spObs1.getHeight()/2, spObs1.getHeight()/2);
+            renderHB.circle(vObs2.x - spObs2.getWidth()/2, vObs2.y - spObs2.getHeight()/2, spObs2.getHeight()/2);
+            renderHB.circle(vObs3.x - spObs3.getWidth()/2, vObs3.y - spObs3.getHeight()/2, spObs3.getHeight()/2);
+            renderHB.circle(vChar.x - spChar.getWidth()/2, vChar.y - spChar.getHeight()/2, spChar.getHeight()/2);
+            renderHB.end();*/
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
                 menuMusic.stop();
