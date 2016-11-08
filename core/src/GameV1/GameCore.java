@@ -27,20 +27,23 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
 
     //Temp Variables
     double dR1S = 1, dR2S = 1, dR3S = 1;
-    Ellipse2D elHB1, elHB2, elHB3, elHBP;
-    Vector2 vChar = new Vector2();
-    Vector2 vObs1 = new Vector2();
-    Vector2 vObs2 = new Vector2();
-    Vector2 vObs3 = new Vector2();
-    Vector2 vRet = new Vector2();
-    Random rand = new Random();
+    
+    //Permanent Variables
+    //Ellipse2D elHB1, elHB2, elHB3, elHBP;
+    Vector2 vChar;
+    Vector2 vObs1;
+    Vector2 vObs2;
+    Vector2 vObs3;
+    Vector2 vRet;
+    Random rand;
     SpriteBatch batch;
     ShapeRenderer renderHB;
     Texture imgReticle, imgSprite, imgSprite2, imgObstacle, imgObstacle2, imgBg, imgBg2, imgPause, imgBox, imgMenu, imgStart, imgMusic;
-    Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG, spStart, spMusic;
+    Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG, spStart, spMusic, spHitRestore;
     int nCursorX, nCursorY, nWindW, nWindH, nRockX1, nRockX2, nRockX3, nScore;
     float fCharRot, fCharMove, fCharAdditive, fPosX;
-    boolean isTouch, isPaused, isMenu = true, isMusicOn, isMMusic, isMusicEnable, isMusicClassic = false;
+    boolean isTouch, isPaused, isMenu, isMusicOn, isMMusic, isMusicEnable, isMusicClassic;
+    boolean hasHit1, hasHit2, hasHit3;
     private ExtendViewport viewport;
     Music menuMusic, bgMusic, menuMusicFly, menuMusicSci, bgMusicFly, bgMusicSci;
     GameCore game;
@@ -50,12 +53,23 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public void create() {
+        hasHit1 = false;
+        hasHit2 = false;
+        hasHit3 = false;
+        vChar = new Vector2();
+        vObs1 = new Vector2();
+        vObs2 = new Vector2();
+        vObs3 = new Vector2();
+        vRet = new Vector2();
+        rand = new Random();
+        isMenu = true;
+        isMusicClassic = false;
         nScore = 0;
         nWindW = Gdx.graphics.getWidth();
         nWindH = Gdx.graphics.getHeight();
-        nRockX1 = nWindW * 3;
-        nRockX2 = nWindW * 6;
-        nRockX3 = nWindW * 9;
+        nRockX1 = nWindW * 30;
+        nRockX2 = nWindW * 60;
+        nRockX3 = nWindW * 90;
         /*if (Gdx.app.getType() == ApplicationType.Android) {
             int ANDROID_WIDTH = nWindW;
             int ANDROID_HEIGHT = nWindH;
@@ -74,7 +88,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             camera.update();
         batch = new SpriteBatch();
         renderHB = new ShapeRenderer();
-        imgMenu = new Texture("Main_Menu.png");
+        imgMenu = new Texture("Main_Menu2.png");
         imgPause = new Texture("pausedImg.png");
         imgReticle = new Texture("badlogic.jpg");
         imgSprite = new Texture("characterSprite1.png");
@@ -115,6 +129,10 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         dR1S = (rand.nextDouble()+1)*12;
         dR2S = (rand.nextDouble()+1)*12;
         dR3S = (rand.nextDouble()+1)*12;
+            /*elHB1 = new Ellipse2D.Double(vObs1.x, vObs1.y, spObs1.getWidth(), spObs1.getWidth());
+            elHB2 = new Ellipse2D.Double(vObs2.x, vObs2.y, spObs2.getWidth(), spObs2.getWidth());
+            elHB3 = new Ellipse2D.Double(vObs3.x, vObs3.y, spObs3.getWidth(), spObs3.getWidth());
+            elHBP = new Ellipse2D.Double(vChar.x, vChar.y, spChar.getHeight(), spChar.getHeight());*/
     }
 
     @Override
@@ -172,7 +190,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             } else {
                 dR1S = (rand.nextDouble()+1)*8;
                 //nRockX1 = nWindW + nWindW/10;
-                vObs1.set(nWindW + nWindW/10, 0);
+                vObs1.add(nWindW + nWindW/3, 0);
             }
             if(vObs2.x > -spObs2.getWidth()) {
                 //nRockX2-=dR2S;
@@ -180,7 +198,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             } else {
                 dR2S = (rand.nextDouble()+1)*10;
                 //nRockX2 = nWindW + nWindW/10;
-                vObs2.set(nWindW + nWindW/10, 0);
+                vObs2.add(nWindW + nWindW/3, 0);
             }
             if(vObs3.x > -spObs3.getWidth()) {
                 //nRockX3-=dR3S;
@@ -188,29 +206,56 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             } else {
                 dR3S = (rand.nextDouble()+1)*12;
                 //nRockX3 = nWindW + nWindW/10;
-                vObs3.set(nWindW + nWindW/10, 0);
+                vObs3.add(nWindW + nWindW/3, 0);
             }
             vObs1.set(vObs1.x, nWindH - nWindH / 4 - spObs1.getHeight() / 2 + nWindH / 12);
             vObs2.set(vObs2.x, nWindH / 2 - spObs2.getHeight() / 2);
             vObs3.set(vObs3.x, nWindH / 2 - nWindH / 4 - spObs3.getHeight() / 2 - nWindH / 12);
-            elHB1.setFrame(vObs1.x, vObs1.y, spObs1.getWidth(), spObs1.getWidth());
-            elHB2.setFrame(vObs2.x, vObs2.y, spObs2.getWidth(), spObs2.getWidth());
-            elHB3.setFrame(vObs3.x, vObs3.y, spObs3.getWidth(), spObs3.getWidth());
-            elHBP.setFrame(vChar.x, vChar.y, spChar.getHeight(), spChar.getHeight());
+            /*elHB1.setFrame(vObs1.x, vObs1.y, spObs1.getWidth(), spObs1.getHeight());
+            elHB2.setFrame(vObs2.x, vObs2.y, spObs2.getWidth(), spObs2.getHeight());
+            elHB3.setFrame(vObs3.x, vObs3.y, spObs3.getWidth(), spObs3.getHeight());
+            elHBP.setFrame(vChar.x, vChar.y, spChar.getWidth(), spChar.getHeight());*/
             
             ////////////////////////////////////////
             
-            if(elHBP.getCenterX()-elHB1.getCenterX()<elHB1.getWidth() ||
-                    elHBP.getCenterX()-elHB2.getCenterX()<elHB2.getWidth() ||
-                    elHBP.getCenterX()-elHB3.getCenterX()<elHB3.getWidth()) {
-                if(elHBP.getCenterY()-elHB1.getCenterY()<elHB1.getHeight() ||
-                    elHBP.getCenterY()-elHB2.getCenterY()<elHB2.getHeight() ||
-                    elHBP.getCenterY()-elHB3.getCenterY()<elHB3.getHeight()) {
+            /*if(elHBP.getBounds2D().getCenterX()-elHB1.getBounds2D().getCenterX()<elHB1.getBounds2D().getWidth() ||
+                    elHBP.getBounds2D().getCenterX()-elHB2.getBounds2D().getCenterX()<elHB2.getBounds2D().getWidth() ||
+                    elHBP.getBounds2D().getCenterX()-elHB3.getBounds2D().getCenterX()<elHB3.getBounds2D().getWidth()) {
+                if(elHBP.getBounds2D().getCenterY()-elHB1.getBounds2D().getCenterY()-elHB1.getBounds2D().getHeight()<elHB1.getBounds2D().getHeight() ||
+                    elHBP.getBounds2D().getCenterY()-elHB2.getBounds2D().getCenterY()-elHB2.getBounds2D().getHeight()<elHB2.getBounds2D().getHeight() ||
+                    elHBP.getBounds2D().getCenterY()-elHB3.getBounds2D().getCenterY()-elHB3.getBounds2D().getHeight()<elHB3.getBounds2D().getHeight()) {
                     isMenu=true;
                     System.out.println(nScore);
                     create();
                 }
+            }*/
+            
+            if(!hasHit1 && Math.sqrt(Math.pow(vChar.x-vObs1.x, 2) + Math.pow(vChar.y - vObs1.y, 2)) < spChar.getHeight()/2+spObs1.getHeight()) {
+                System.out.println("Hit On 1");
+                hasHit1 = true;
             }
+            if(!hasHit2 && Math.sqrt(Math.pow(vChar.x-vObs2.x, 2) + Math.pow(vChar.y - vObs2.y, 2)) < spChar.getHeight()/2+spObs2.getHeight()) {
+                System.out.println("Hit On 2");
+                hasHit2 = true;
+            }
+            if(!hasHit3 && Math.sqrt(Math.pow(vChar.x-vObs3.x, 2) + Math.pow(vChar.y - vObs3.y, 2)) < spChar.getHeight()/2+spObs3.getHeight()) {
+                System.out.println("Hit On 3");
+                hasHit3 = true;
+            }
+            if(vChar.x > vObs1.x - nWindW/2 && vChar.x < vObs1.x - nWindW/3 && hasHit1) {
+                hasHit1 = false;
+            }
+            if(vChar.x > vObs2.x - nWindW/2 && vChar.x < vObs2.x - nWindW/3 && hasHit2) {
+                hasHit2 = false;
+            }
+            if(vChar.x > vObs3.x - nWindW/2 && vChar.x < vObs3.x - nWindW/3 && hasHit3) {
+                hasHit3 = false;
+            }
+            
+            /*System.out.println(elHBP.getBounds2D().getCenterY());
+            System.out.println(elHB3.getBounds2D().getCenterX());
+            System.out.println(elHB3.getBounds2D().getCenterY());
+            System.out.println((elHBP.getBounds2D().getCenterX()-elHB1.getBounds2D().getCenterX()>elHB1.getBounds2D().getWidth()));*/
             
             ////////////////////////////////////////
             
