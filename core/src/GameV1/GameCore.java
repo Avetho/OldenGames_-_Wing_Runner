@@ -17,6 +17,8 @@ import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.viewport.*;
 import java.util.Random;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -40,7 +42,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     ShapeRenderer renderHB;
     Texture imgReticle, imgSprite, imgSprite2, imgObstacle, imgObstacle2, imgBg, imgBg2, imgPause, imgBox, imgMenu, imgStart, imgMusic;
     Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG, spStart, spMusic, spHitRestore;
-    int nCursorX, nCursorY, nWindW, nWindH, nRockX1, nRockX2, nRockX3, nScore;
+    int nCursorX, nCursorY, nWindW, nWindH, nRockX1, nRockX2, nRockX3;
     float fCharRot, fCharMove, fCharAdditive, fPosX;
     boolean isTouch, isPaused, isMenu, isMusicOn, isMMusic, isMusicEnable, isMusicClassic;
     boolean hasHit1, hasHit2, hasHit3;
@@ -50,9 +52,13 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     EntityPlayer objPlayer;
     float fbgX = 0;
     OrthographicCamera camera;
+    int nLives, nScore;
+    BitmapFont fontGeneric;//http://stackoverflow.com/questions/12466385/how-can-i-draw-text-using-libgdx-java
 
     @Override
     public void create() {
+        fontGeneric = new BitmapFont();
+        nLives = 99;
         hasHit1 = false;
         hasHit2 = false;
         hasHit3 = false;
@@ -129,6 +135,8 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         dR1S = (rand.nextDouble()+1)*12;
         dR2S = (rand.nextDouble()+1)*12;
         dR3S = (rand.nextDouble()+1)*12;
+        fontGeneric.setColor(Color.RED);
+        fontGeneric.getData().scale(1/(860/nWindH));//http://stackoverflow.com/questions/33633395/how-set-libgdx-bitmap-font-size
             /*elHB1 = new Ellipse2D.Double(vObs1.x, vObs1.y, spObs1.getWidth(), spObs1.getWidth());
             elHB2 = new Ellipse2D.Double(vObs2.x, vObs2.y, spObs2.getWidth(), spObs2.getWidth());
             elHB3 = new Ellipse2D.Double(vObs3.x, vObs3.y, spObs3.getWidth(), spObs3.getWidth());
@@ -159,7 +167,6 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 isMenu = false;
             }
         } else if (isMenu == false) {
-            nScore++;
             if (bgMusic.isPlaying() == false) {
                 bgMusic.setLooping(true);
                 bgMusic.play();//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
@@ -188,7 +195,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 //nRockX1-=dR1S;
                 vObs1.sub((float)dR1S, 0);
             } else {
-                dR1S = (rand.nextDouble()+1)*8;
+                dR1S = (rand.nextDouble()+1)*(8/(860/nWindH));
                 //nRockX1 = nWindW + nWindW/10;
                 vObs1.add(nWindW + nWindW/3, 0);
             }
@@ -196,7 +203,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 //nRockX2-=dR2S;
                 vObs2.sub((float)dR2S, 0);
             } else {
-                dR2S = (rand.nextDouble()+1)*10;
+                dR2S = (rand.nextDouble()+1)*(10/(860/nWindH));
                 //nRockX2 = nWindW + nWindW/10;
                 vObs2.add(nWindW + nWindW/3, 0);
             }
@@ -204,7 +211,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 //nRockX3-=dR3S;
                 vObs3.sub((float)dR3S, 0);
             } else {
-                dR3S = (rand.nextDouble()+1)*12;
+                dR3S = (rand.nextDouble()+1)*(12/(860/nWindH));
                 //nRockX3 = nWindW + nWindW/10;
                 vObs3.add(nWindW + nWindW/3, 0);
             }
@@ -230,27 +237,40 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 }
             }*/
             
-            if(!hasHit1 && Math.sqrt(Math.pow(vChar.x-vObs1.x, 2) + Math.pow(vChar.y - vObs1.y, 2)) < spChar.getHeight()/2+spObs1.getHeight()) {
-                System.out.println("Hit On 1");
+            if(!hasHit1 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs1.x+spObs1.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs1.y+spObs1.getHeight()/2), 2)) < spChar.getHeight()/2+spObs1.getHeight()/2) {
+                //System.out.println("Hit On 1");
+                nLives--;
                 hasHit1 = true;
             }
-            if(!hasHit2 && Math.sqrt(Math.pow(vChar.x-vObs2.x, 2) + Math.pow(vChar.y - vObs2.y, 2)) < spChar.getHeight()/2+spObs2.getHeight()) {
-                System.out.println("Hit On 2");
+            if(!hasHit2 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs2.x+spObs2.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs2.y+spObs2.getHeight()/2), 2)) < spChar.getHeight()/2+spObs2.getHeight()/2) {
+                //System.out.println("Hit On 2");
+                nLives--;
                 hasHit2 = true;
             }
-            if(!hasHit3 && Math.sqrt(Math.pow(vChar.x-vObs3.x, 2) + Math.pow(vChar.y - vObs3.y, 2)) < spChar.getHeight()/2+spObs3.getHeight()) {
-                System.out.println("Hit On 3");
+            if(!hasHit3 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs3.x+spObs3.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs3.y+spObs3.getHeight()/2), 2)) < spChar.getHeight()/2+spObs3.getHeight()/2) {
+                //System.out.println("Hit On 3");
+                nLives--;
                 hasHit3 = true;
             }
             if(vChar.x > vObs1.x - nWindW/2 && vChar.x < vObs1.x - nWindW/3 && hasHit1) {
+                nScore++;
                 hasHit1 = false;
             }
             if(vChar.x > vObs2.x - nWindW/2 && vChar.x < vObs2.x - nWindW/3 && hasHit2) {
+                nScore++;
                 hasHit2 = false;
             }
             if(vChar.x > vObs3.x - nWindW/2 && vChar.x < vObs3.x - nWindW/3 && hasHit3) {
+                nScore++;
                 hasHit3 = false;
             }
+            if(nLives == 0) {
+                isMenu=true;
+                System.out.println(nScore);
+                create();
+            }
+            //System.out.println(nLives);
+            //System.out.println(nScore);
             
             /*System.out.println(elHBP.getBounds2D().getCenterY());
             System.out.println(elHB3.getBounds2D().getCenterX());
@@ -275,6 +295,14 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             //batch.draw(spChar, fPosX - spChar.getWidth() / 2, fPosY - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
             batch.draw(spReticle, vRet.x, vRet.y, spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
             //batch.end();
+            fontGeneric.draw(batch, "Score: " + Integer.toString(nScore), nWindW/50, nWindH);
+            fontGeneric.draw(batch, "Lives: " + Integer.toString(nLives), nWindW/6, nWindH);
+            fontGeneric.draw(batch, "FPS: " + Float.toString(Gdx.graphics.getFramesPerSecond()), nWindW/50, nWindH/2+nWindH/3+nWindH/9);
+            
+            /*batch.draw(imgReticle, fPosX+spChar.getWidth()/2, vChar.y-spChar.getHeight()/2, spChar.getWidth(), spChar.getHeight());
+            batch.draw(imgReticle, vObs1.x+spObs1.getWidth()/2, vObs1.y-spObs1.getHeight()/2, spObs1.getWidth(), spObs1.getHeight());
+            batch.draw(imgReticle, vObs2.x+spObs2.getWidth()/2, vObs2.y-spObs2.getHeight()/2, spObs2.getWidth(), spObs2.getHeight());
+            batch.draw(imgReticle, vObs3.x+spObs3.getWidth()/2, vObs3.y-spObs3.getHeight()/2, spObs3.getWidth(), spObs3.getHeight());*/
             
             batch.end();
             /*renderHB.begin(ShapeType.Line);
@@ -337,6 +365,9 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         // viewport must be updated for it to work properly
         //viewport.update(width, height);
         //camera.update();
+        bgMusic.stop();
+        menuMusic.stop();
+        create();
     }
     
     @Override
