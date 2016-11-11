@@ -298,6 +298,9 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             fontGeneric.draw(batch, "Score: " + Integer.toString(nScore), nWindW/50, nWindH);
             fontGeneric.draw(batch, "Lives: " + Integer.toString(nLives), nWindW/6, nWindH);
             fontGeneric.draw(batch, "FPS: " + Float.toString(Gdx.graphics.getFramesPerSecond()), nWindW/50, nWindH/2+nWindH/3+nWindH/9);
+            fontGeneric.draw(batch, "TRS: " + Double.toString(dR1S), nWindW/50, nWindH/2+nWindH/3+nWindH/14);
+            fontGeneric.draw(batch, "MRS: " + Double.toString(dR2S), nWindW/50, nWindH/2+nWindH/3+nWindH/21);
+            fontGeneric.draw(batch, "BRS: " + Double.toString(dR3S), nWindW/50, nWindH/2+nWindH/3+nWindH/48);
             
             /*batch.draw(imgReticle, fPosX+spChar.getWidth()/2, vChar.y-spChar.getHeight()/2, spChar.getWidth(), spChar.getHeight());
             batch.draw(imgReticle, vObs1.x+spObs1.getWidth()/2, vObs1.y-spObs1.getHeight()/2, spObs1.getWidth(), spObs1.getHeight());
