@@ -54,9 +54,11 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     OrthographicCamera camera;
     int nLives, nScore;
     BitmapFont fontGeneric;//http://stackoverflow.com/questions/12466385/how-can-i-draw-text-using-libgdx-java
+    double dRockSpeed;
 
     @Override
     public void create() {
+        dRockSpeed = 5;
         fontGeneric = new BitmapFont();
         nLives = 99;
         hasHit1 = false;
@@ -171,12 +173,13 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 bgMusic.setLooping(true);
                 bgMusic.play();//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
             }
+            if(dRockSpeed > 1) dRockSpeed -= 0.005;
             //nCursorX = Gdx.input.getX();
             nCursorY = nWindH - Gdx.input.getY();
             //fCharRot = findAngle(fPosX, fPosY, nWindW * 2 / 3, nCursorY);
             fCharRot = findAngle2(vChar, vRet);
             fCharMove = (vRet.y - vChar.y) / 13;
-            vChar.add(0, fCharMove);
+            vChar.add(0, fCharMove*4*(1/(float)dRockSpeed));
             spChar.setRotation(fCharRot);
             fPosX = nWindW / 5;
             vRet.set(nWindW * 2 / 3, nCursorY - spReticle.getHeight() / 2);
@@ -186,34 +189,34 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             fPosX = nWindW / 5;
             //batch.setTransformMatrix(game.getCamera().view);
             //camera.update();
-            fbgX-=3;
+            fbgX-=3*(1/dRockSpeed*5);
             if(fbgX < -nWindW) {
                 fbgX=0;
             }
-            fCharMove += nWindH/252;
+            fCharMove += nWindH/52;
             if(vObs1.x > -spObs1.getWidth()) {
                 //nRockX1-=dR1S;
                 vObs1.sub((float)dR1S, 0);
             } else {
-                dR1S = (rand.nextDouble()+1)*(8/(860/nWindH));
+                dR1S = (rand.nextDouble()+1)*(21/(860/nWindH)/dRockSpeed);
                 //nRockX1 = nWindW + nWindW/10;
-                vObs1.add(nWindW + nWindW/3, 0);
+                vObs1.add(nWindW*3, 0);
             }
             if(vObs2.x > -spObs2.getWidth()) {
                 //nRockX2-=dR2S;
                 vObs2.sub((float)dR2S, 0);
             } else {
-                dR2S = (rand.nextDouble()+1)*(10/(860/nWindH));
+                dR2S = (rand.nextDouble()+1)*(24/(860/nWindH)/dRockSpeed);
                 //nRockX2 = nWindW + nWindW/10;
-                vObs2.add(nWindW + nWindW/3, 0);
+                vObs2.add(nWindW*3, 0);
             }
             if(vObs3.x > -spObs3.getWidth()) {
                 //nRockX3-=dR3S;
                 vObs3.sub((float)dR3S, 0);
             } else {
-                dR3S = (rand.nextDouble()+1)*(12/(860/nWindH));
+                dR3S = (rand.nextDouble()+1)*(27/(860/nWindH)/dRockSpeed);
                 //nRockX3 = nWindW + nWindW/10;
-                vObs3.add(nWindW + nWindW/3, 0);
+                vObs3.add(nWindW*3, 0);
             }
             vObs1.set(vObs1.x, nWindH - nWindH / 4 - spObs1.getHeight() / 2 + nWindH / 12);
             vObs2.set(vObs2.x, nWindH / 2 - spObs2.getHeight() / 2);
@@ -252,15 +255,15 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 nLives--;
                 hasHit3 = true;
             }
-            if(vChar.x > vObs1.x - nWindW/2 && vChar.x < vObs1.x - nWindW/3 && hasHit1) {
+            if(vChar.x > vObs1.x && vChar.x < vObs1.x - nWindW/3 && hasHit1) {
                 nScore++;
                 hasHit1 = false;
             }
-            if(vChar.x > vObs2.x - nWindW/2 && vChar.x < vObs2.x - nWindW/3 && hasHit2) {
+            if(vChar.x > vObs2.x && vChar.x < vObs2.x - nWindW/3 && hasHit2) {
                 nScore++;
                 hasHit2 = false;
             }
-            if(vChar.x > vObs3.x - nWindW/2 && vChar.x < vObs3.x - nWindW/3 && hasHit3) {
+            if(vChar.x > vObs3.x && vChar.x < vObs3.x - nWindW/3 && hasHit3) {
                 nScore++;
                 hasHit3 = false;
             }
@@ -298,9 +301,10 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             fontGeneric.draw(batch, "Score: " + Integer.toString(nScore), nWindW/50, nWindH);
             fontGeneric.draw(batch, "Lives: " + Integer.toString(nLives), nWindW/6, nWindH);
             fontGeneric.draw(batch, "FPS: " + Float.toString(Gdx.graphics.getFramesPerSecond()), nWindW/50, nWindH/2+nWindH/3+nWindH/9);
-            fontGeneric.draw(batch, "TRS: " + Double.toString(dR1S), nWindW/50, nWindH/2+nWindH/3+nWindH/14);
-            fontGeneric.draw(batch, "MRS: " + Double.toString(dR2S), nWindW/50, nWindH/2+nWindH/3+nWindH/21);
-            fontGeneric.draw(batch, "BRS: " + Double.toString(dR3S), nWindW/50, nWindH/2+nWindH/3+nWindH/48);
+            fontGeneric.draw(batch, "TRS: " + Double.toString(Math.round(dR1S*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3+nWindH/14);
+            fontGeneric.draw(batch, "MRS: " + Double.toString(Math.round(dR2S*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3+nWindH/23);
+            fontGeneric.draw(batch, "BRS: " + Double.toString(Math.round(dR3S*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3+nWindH/75);
+            fontGeneric.draw(batch, "Speed Multiplier: " + Double.toString(Math.round((1/dRockSpeed*5)*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3-nWindH/65);
             
             /*batch.draw(imgReticle, fPosX+spChar.getWidth()/2, vChar.y-spChar.getHeight()/2, spChar.getWidth(), spChar.getHeight());
             batch.draw(imgReticle, vObs1.x+spObs1.getWidth()/2, vObs1.y-spObs1.getHeight()/2, spObs1.getWidth(), spObs1.getHeight());
