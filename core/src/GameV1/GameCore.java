@@ -54,11 +54,12 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     OrthographicCamera camera;
     int nLives, nScore;
     BitmapFont fontGeneric;//http://stackoverflow.com/questions/12466385/how-can-i-draw-text-using-libgdx-java
-    double dRockSpeed;
+    double dRockSpeed, dRockSpeedO;
 
     @Override
     public void create() {
         dRockSpeed = 5;
+        dRockSpeedO = dRockSpeed;
         fontGeneric = new BitmapFont();
         nLives = 99;
         hasHit1 = false;
@@ -173,13 +174,15 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 bgMusic.setLooping(true);
                 bgMusic.play();//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
             }
-            if(dRockSpeed > 1) dRockSpeed -= 0.005;
+            if(dRockSpeed > 1) {
+                dRockSpeed -= 0.0005 - dRockSpeed/49126;
+            }
             //nCursorX = Gdx.input.getX();
             nCursorY = nWindH - Gdx.input.getY();
             //fCharRot = findAngle(fPosX, fPosY, nWindW * 2 / 3, nCursorY);
             fCharRot = findAngle2(vChar, vRet);
             fCharMove = (vRet.y - vChar.y) / 13;
-            vChar.add(0, fCharMove*4*(1/(float)dRockSpeed));
+            vChar.add(0, fCharMove*2*(1/(float)dRockSpeed));
             spChar.setRotation(fCharRot);
             fPosX = nWindW / 5;
             vRet.set(nWindW * 2 / 3, nCursorY - spReticle.getHeight() / 2);
@@ -189,7 +192,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             fPosX = nWindW / 5;
             //batch.setTransformMatrix(game.getCamera().view);
             //camera.update();
-            fbgX-=3*(1/dRockSpeed*5);
+            fbgX-=3*(1/dRockSpeed*dRockSpeedO);
             if(fbgX < -nWindW) {
                 fbgX=0;
             }
@@ -198,7 +201,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 //nRockX1-=dR1S;
                 vObs1.sub((float)dR1S, 0);
             } else {
-                dR1S = (rand.nextDouble()+1)*(21/(860/nWindH)/dRockSpeed);
+                dR1S = (rand.nextDouble()+2)*(21/(860/nWindH)/dRockSpeed);
                 //nRockX1 = nWindW + nWindW/10;
                 vObs1.add(nWindW*3, 0);
             }
@@ -206,7 +209,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 //nRockX2-=dR2S;
                 vObs2.sub((float)dR2S, 0);
             } else {
-                dR2S = (rand.nextDouble()+1)*(24/(860/nWindH)/dRockSpeed);
+                dR2S = (rand.nextDouble()+2)*(24/(860/nWindH)/dRockSpeed);
                 //nRockX2 = nWindW + nWindW/10;
                 vObs2.add(nWindW*3, 0);
             }
@@ -214,7 +217,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 //nRockX3-=dR3S;
                 vObs3.sub((float)dR3S, 0);
             } else {
-                dR3S = (rand.nextDouble()+1)*(27/(860/nWindH)/dRockSpeed);
+                dR3S = (rand.nextDouble()+2)*(27/(860/nWindH)/dRockSpeed);
                 //nRockX3 = nWindW + nWindW/10;
                 vObs3.add(nWindW*3, 0);
             }
@@ -287,24 +290,26 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
 
             batch.draw(spBG, fbgX, 0, nWindW, nWindH);
             batch.draw(spBG, fbgX + nWindW, 0, nWindW, nWindH);
+            
             batch.draw(spBox, 0, nWindH);
             batch.draw(spBox, 0, 0);
+            
             batch.draw(spObs1, vObs1.x, vObs1.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
             batch.draw(spObs2, vObs2.x, vObs2.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
             batch.draw(spObs3, vObs3.x, vObs3.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
-            //batch.draw(spObs4, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
-            //batch.draw(spObs5, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
+            
             batch.draw(spChar, fPosX - spChar.getWidth() / 2, vChar.y - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
-            //batch.draw(spChar, fPosX - spChar.getWidth() / 2, fPosY - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
+            //objPlayer.render(batch);
+            
             batch.draw(spReticle, vRet.x, vRet.y, spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
-            //batch.end();
+            
             fontGeneric.draw(batch, "Score: " + Integer.toString(nScore), nWindW/50, nWindH);
             fontGeneric.draw(batch, "Lives: " + Integer.toString(nLives), nWindW/6, nWindH);
             fontGeneric.draw(batch, "FPS: " + Float.toString(Gdx.graphics.getFramesPerSecond()), nWindW/50, nWindH/2+nWindH/3+nWindH/9);
             fontGeneric.draw(batch, "TRS: " + Double.toString(Math.round(dR1S*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3+nWindH/14);
             fontGeneric.draw(batch, "MRS: " + Double.toString(Math.round(dR2S*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3+nWindH/23);
             fontGeneric.draw(batch, "BRS: " + Double.toString(Math.round(dR3S*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3+nWindH/75);
-            fontGeneric.draw(batch, "Speed Multiplier: " + Double.toString(Math.round((1/dRockSpeed*5)*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3-nWindH/65);
+            fontGeneric.draw(batch, "Speed Multiplier: " + Double.toString(Math.round((1/dRockSpeed*dRockSpeedO)*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3-nWindH/65);
             
             /*batch.draw(imgReticle, fPosX+spChar.getWidth()/2, vChar.y-spChar.getHeight()/2, spChar.getWidth(), spChar.getHeight());
             batch.draw(imgReticle, vObs1.x+spObs1.getWidth()/2, vObs1.y-spObs1.getHeight()/2, spObs1.getWidth(), spObs1.getHeight());
