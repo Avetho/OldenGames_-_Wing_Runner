@@ -24,6 +24,7 @@ import java.util.Random;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import java.awt.geom.Ellipse2D;
+import com.badlogic.gdx.utils.Timer;
 
 public class GameCore extends ApplicationAdapter implements InputProcessor {
     //Permanent Variables
@@ -36,7 +37,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     Random rand; //To randomize the rocks' speeds and other things.
     SpriteBatch batch; //To draw all the things.
     ShapeRenderer renderHB; //To render all the shapes, of which are none as of yet.
-    Texture imgReticle, imgSprite, imgSprite2, imgObstacle, imgObstacle2, imgBg, imgBg2, imgPause, imgBox, imgMenu, imgStart, imgMusic; //All that you see are belong to these.
+    Texture imgReticle, imgSprite, imgSprite2, imgObstacle, imgObstacle2, imgBg, imgBg2, imgPause, imgBox, imgMenu, imgMenuInv, imgStart, imgMusic; //All that you see are belong to these.
     Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG, spStart, spMusic, spHitRestore; //All the stuff are belong to here.
     int nCursorX, nCursorY, nWindW, nWindH, nRockX1, nRockX2, nRockX3; //More generic variables.
     float fCharRot, fCharMove, fCharAdditive, fPosX; //Generic variables for the game.
@@ -54,14 +55,19 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     double dRockSpeed, dRockSpeedO; //dRockSpeedO is original speed so only one number has to be changed.
     float fSpeedMod; //Changes vertical speed based on rotation. Up is slower than down.
     int nScoreInc; //Every time this hits 1000 it is set to 0 after incrementing the score by one: nScore++;
+    boolean justStarted; //Gives you a delay from starting to avoid 3 score instantly, and to avoid losing a life at the start.
+    int nTime; //Counting until you are free from danger at the start.
+    int nMode; //The mode of the game. 1 is easy, 2 is intermediate, 3 is hard, 4 is colormania, 5 is shadow.
 
     @Override
     public void create() {
-        fSpeedMod = 0;
         dRockSpeed = 5;
+        nMode = 1;
         dRockSpeedO = dRockSpeed;
         fontGeneric = new BitmapFont();
-        nLives = 9;
+        justStarted = true;
+        fSpeedMod = 0;
+        nLives = 3;
         hasHit1 = false;
         hasHit2 = false;
         hasHit3 = false;
@@ -98,6 +104,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         batch = new SpriteBatch();
         renderHB = new ShapeRenderer();
         imgMenu = new Texture("Main_Menu2.png");
+        imgMenuInv = new Texture("Main_Menu2-Invis.png");
         imgPause = new Texture("pausedImg.png");
         imgReticle = new Texture("badlogic.jpg");
         imgSprite = new Texture("characterSprite1.png");
@@ -157,8 +164,20 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         }
         if (isMenu) {
             batch.begin();
-            batch.draw(imgMenu, 0, 0, nWindW, nWindH);
-                fontGeneric.draw(batch, "Score: " + Integer.toString(nScore), nWindW/50, nWindH);
+            if(Gdx.input.isKeyJustPressed(Input.Keys.D)) {
+                nMode++;
+                if(nMode == 6) {
+                    nMode = 1;
+                }
+            }
+            if(justStarted) {
+                batch.draw(imgMenu, 0, 0, nWindW, nWindH);
+            }
+            else {
+                batch.draw(imgMenuInv, 0, 0, nWindW, nWindH);
+            }
+            fontGeneric.draw(batch, "Score: " + Integer.toString(nScore), nWindW/50, nWindH);
+            fontGeneric.draw(batch, "Mode: " + Integer.toString(nMode), nWindW/25, nWindH/2);
             batch.end();
             if (menuMusic.isPlaying() == false) {
                 bgMusic.stop();
@@ -171,6 +190,28 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 isMenu = false;
             }
         } else if (isMenu == false) {
+            if(nMode == 5) {
+                batch.setColor(128, 128, 128, 50); //A fun 'bug' I came across while color changing was a possible "Shadow" mode.
+            }
+            else {
+                batch.setColor(Color.WHITE);
+            }
+            if(nMode == 5) {
+                batch.setColor(0, 0, 0, 100); //You can barely see the player, rocks, and no background, just all on a crimson color backdrop.
+            }
+            if(nMode == 4) {
+                batch.setColor(rand.nextInt(255 - 200 + 1), rand.nextInt(255 - 200 + 1), rand.nextInt(255 - 200 + 1), 100);
+            }
+            if(nTime >= 150) {
+                justStarted = false;
+            }
+            if(nTime < 150) {
+                nTime++;
+            }
+            if(nScore % 100 == 0 && nScore != 0) {
+                nLives++;
+                nScore++;
+            }
             if(Gdx.input.justTouched()) {
                 hasHit1 = false;
                 hasHit2 = false;
@@ -180,7 +221,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 bgMusic.setLooping(true);
                 bgMusic.play();//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
             }
-            if(dRockSpeed > 1) {
+            if(dRockSpeed > 3) {
                 dRockSpeed -= 0.00025 - dRockSpeed/49126;
             }
             //nCursorX = Gdx.input.getX();
@@ -188,40 +229,44 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             //fCharRot = findAngle(fPosX, fPosY, nWindW * 2 / 3, nCursorY);
             fCharRot = findAngle2(vChar, vRet);
             fCharMove = (vRet.y - vChar.y) / 13;
+            //Grants vertical movement, slows upward speed more than downward using fSpeedMod.
             vChar.add(0, fCharMove*(1/(float)dRockSpeed)+fSpeedMod);
+            //Rotates the player. Makes it look cool and advanced. It is.
             spChar.setRotation(fCharRot);
-            fPosX = nWindW / 5;
+            //Lets you know where you are going when not using a mouse.
             vRet.set(nWindW * 2 / 3, nCursorY - spReticle.getHeight() / 2);
-            //if(Gdx.input.isKeyPressed(Keys.F11))Gdx.graphics.setDisplayMode(Gdx.graphics.);
+            //Makes background a cool color.
             Gdx.gl.glClearColor(0.128f, 0, 0, 1);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+            //Rotation conversion by inversion. Makes calculations easier afterward by keeping it positive ;)
             if(fCharRot > 0) { //Sets the rotation to a smoother number set for subsequent calculations.
                 fCharRot-=180;
             }
             else if(fCharRot < 0) { //Sets the rotation to a smoother number set for subsequent calculations.
                 fCharRot+=180;
             }
+            //Makes character move a bit forward when pitching down and back when pitching up. Can look like a flying fish when pitching fast enough XD
             if(fCharRot > 0) {
                 fPosX = nWindW / 5 + (fCharRot-180)*2;
             }
             else if(fCharRot < 0) {
                 fPosX = nWindW / 5 - (fCharRot+180)*2;
             }
-            fSpeedMod = (fCharRot+180)/180;
-            System.out.println(fSpeedMod);
-            //System.out.println(-1/(fCharRot+90)*750);
-            //batch.setTransformMatrix(game.getCamera().view);
-            //camera.update();
+            //Makes character move slower up than down. Effect becomes moot at higher speeds as it doesn't scale with speed. At higher speed a lower pitch is needed to maintain altitude. Somewhat simulates drag.
+            fSpeedMod = (fCharRot+120)/120;
+            //Moving background picture. Looks cool and gets weird under high acceleration, like it desyncs. That isn't an issue, it a warp feature.
             fbgX-=3*(1/dRockSpeed*dRockSpeedO);
             if(fbgX < -nWindW) {
                 fbgX=0;
             }
+            //Scaled gravitational effect on the player.
             fCharMove += nWindH/52;
+            //Rock movement. Makes them go fast at random speed according to the global speed modifier.
             if(vObs1.x > -spObs1.getWidth()) {
                 //nRockX1-=dR1S;
                 vObs1.sub((float)dR1S, 0);
             } else {
-                dR1S = (rand.nextDouble()+1)*(21/(860/nWindH)/dRockSpeed);
+                dR1S = (rand.nextDouble()+2)*(24/(860/nWindH)/dRockSpeed);
                 //nRockX1 = nWindW + nWindW/10;
                 vObs1.add(nWindW*3, 0);
             }
@@ -229,7 +274,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 //nRockX2-=dR2S;
                 vObs2.sub((float)dR2S, 0);
             } else {
-                dR2S = (rand.nextDouble()+1)*(27/(860/nWindH)/dRockSpeed);
+                dR2S = (rand.nextDouble()+2)*(30/(860/nWindH)/dRockSpeed);
                 //nRockX2 = nWindW + nWindW/10;
                 vObs2.add(nWindW*3, 0);
             }
@@ -237,85 +282,60 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 //nRockX3-=dR3S;
                 vObs3.sub((float)dR3S, 0);
             } else {
-                dR3S = (rand.nextDouble()+1)*(33/(860/nWindH)/dRockSpeed);
+                dR3S = (rand.nextDouble()+2)*(36/(860/nWindH)/dRockSpeed);
                 //nRockX3 = nWindW + nWindW/10;
                 vObs3.add(nWindW*3, 0);
             }
+            //Keeps the rock rails intact, could be done better though.
             vObs1.set(vObs1.x, nWindH - nWindH / 4 - spObs1.getHeight() / 2 + nWindH / 12);
             vObs2.set(vObs2.x, nWindH / 2 - spObs2.getHeight() / 2);
             vObs3.set(vObs3.x, nWindH / 2 - nWindH / 4 - spObs3.getHeight() / 2 - nWindH / 12);
-            /*elHB1.setFrame(vObs1.x, vObs1.y, spObs1.getWidth(), spObs1.getHeight());
-            elHB2.setFrame(vObs2.x, vObs2.y, spObs2.getWidth(), spObs2.getHeight());
-            elHB3.setFrame(vObs3.x, vObs3.y, spObs3.getWidth(), spObs3.getHeight());
-            elHBP.setFrame(vChar.x, vChar.y, spChar.getWidth(), spChar.getHeight());*/
-            
-            ////////////////////////////////////////
-            
-            /*if(elHBP.getBounds2D().getCenterX()-elHB1.getBounds2D().getCenterX()<elHB1.getBounds2D().getWidth() ||
-                    elHBP.getBounds2D().getCenterX()-elHB2.getBounds2D().getCenterX()<elHB2.getBounds2D().getWidth() ||
-                    elHBP.getBounds2D().getCenterX()-elHB3.getBounds2D().getCenterX()<elHB3.getBounds2D().getWidth()) {
-                if(elHBP.getBounds2D().getCenterY()-elHB1.getBounds2D().getCenterY()-elHB1.getBounds2D().getHeight()<elHB1.getBounds2D().getHeight() ||
-                    elHBP.getBounds2D().getCenterY()-elHB2.getBounds2D().getCenterY()-elHB2.getBounds2D().getHeight()<elHB2.getBounds2D().getHeight() ||
-                    elHBP.getBounds2D().getCenterY()-elHB3.getBounds2D().getCenterY()-elHB3.getBounds2D().getHeight()<elHB3.getBounds2D().getHeight()) {
-                    isMenu=true;
-                    System.out.println(nScore);
-                    create();
-                }
-            }*/
-            
-            if(!hasHit1 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs1.x+spObs1.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs1.y+spObs1.getHeight()/2), 2)) < spChar.getHeight()/2+spObs1.getHeight()/2) {
+            //Hit detection below. Has no mercy on it's own.
+            if(!hasHit1 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs1.x+spObs1.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs1.y+spObs1.getHeight()/2), 2)) < spChar.getHeight()/2+spObs1.getHeight()/2 && !justStarted) {
                 //System.out.println("Hit On 1");
                 nLives--;
                 hasHit1 = true;
-            } /*else {
-                nScore++;
-                hasHit1 = false;
-            }*/
-            if(!hasHit2 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs2.x+spObs2.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs2.y+spObs2.getHeight()/2), 2)) < spChar.getHeight()/2+spObs2.getHeight()/2) {
+            }
+            if(!hasHit2 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs2.x+spObs2.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs2.y+spObs2.getHeight()/2), 2)) < spChar.getHeight()/2+spObs2.getHeight()/2 && !justStarted) {
                 //System.out.println("Hit On 2");
                 nLives--;
                 hasHit2 = true;
-            } /*else {
-                nScore++;
-                hasHit2 = false;
-            }*/
-            if(!hasHit3 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs3.x+spObs3.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs3.y+spObs3.getHeight()/2), 2)) < spChar.getHeight()/2+spObs3.getHeight()/2) {
+            }
+            if(!hasHit3 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs3.x+spObs3.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs3.y+spObs3.getHeight()/2), 2)) < spChar.getHeight()/2+spObs3.getHeight()/2 && !justStarted) {
                 //System.out.println("Hit On 3");
+                System.out.println(Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs3.x+spObs3.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs3.y+spObs3.getHeight()/2), 2)));
+                System.out.println(spChar.getHeight()/2+spObs3.getHeight()/2);
                 nLives--;
                 hasHit3 = true;
-            } /*else {
-                nScore++;
-                hasHit3 = false;
-            }*/
-            if(vChar.x > vObs1.x && vChar.x <= vObs1.x - nWindW/2 && hasHit1) {
-                //nScore++;
+            }
+            //Hit reapeat defense below. Stops insta-death on first impact in modes with more than 1 life.
+            if(vChar.x >= vObs1.x + spObs1.getWidth() && vChar.x <= vObs1.x + nWindW/25 + spObs1.getWidth() && hasHit1) {
                 hasHit1 = false;
             }
-            if(vChar.x > vObs2.x && vChar.x <= vObs2.x - nWindW/2 && hasHit2) {
-                //nScore++;
+            if(vChar.x >= vObs2.x + spObs2.getWidth() && vChar.x <= vObs2.x + nWindW/25 + spObs2.getWidth() && hasHit2) {
                 hasHit2 = false;
             }
-            if(vChar.x > vObs3.x && vChar.x <= vObs3.x - nWindW/2 && hasHit3) {
-                //nScore++;
+            if(vChar.x >= vObs3.x + spObs3.getWidth() && vChar.x <= vObs3.x + nWindW/25 + spObs3.getWidth() && hasHit3) {
                 hasHit3 = false;
             }
+            //Scoring below.
+            if(vChar.x >= vObs1.x + spObs1.getWidth() && vChar.x <= vObs1.x + nWindW/25 + spObs1.getWidth() && !hasHit1 && !justStarted) {
+                nScore++;
+            }
+            if(vChar.x >= vObs2.x + spObs2.getWidth() && vChar.x <= vObs2.x + nWindW/25 + spObs2.getWidth() && !hasHit2 && !justStarted) {
+                nScore++;
+            }
+            if(vChar.x >= vObs3.x + spObs3.getWidth() && vChar.x <= vObs3.x + nWindW/25 + spObs3.getWidth() && !hasHit3 && !justStarted) {
+                nScore++;
+            }
+            //Death sensor below.
             if(nLives == 0) {
                 isMenu=true;
                 System.out.println(nScore);
                 create();
             }
-            //System.out.println(nLives);
-            //System.out.println(nScore);
-            
-            /*System.out.println(elHBP.getBounds2D().getCenterY());
-            System.out.println(elHB3.getBounds2D().getCenterX());
-            System.out.println(elHB3.getBounds2D().getCenterY());
-            System.out.println((elHBP.getBounds2D().getCenterX()-elHB1.getBounds2D().getCenterX()>elHB1.getBounds2D().getWidth()));*/
-            
-            ////////////////////////////////////////
-            
+            //Graphics below.
             batch.begin();
-            //batch.setProjectionMatrix(camera.combined);
 
             batch.draw(spBG, fbgX, 0, nWindW, nWindH);
             batch.draw(spBG, fbgX + nWindW, 0, nWindW, nWindH);
@@ -344,20 +364,9 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             fontGeneric.draw(batch, "hasHit2: " + hasHit2, 0, 350);
             fontGeneric.draw(batch, "hasHit3: " + hasHit3, 0, 450);
             
-            /*batch.draw(imgReticle, fPosX+spChar.getWidth()/2, vChar.y-spChar.getHeight()/2, spChar.getWidth(), spChar.getHeight());
-            batch.draw(imgReticle, vObs1.x+spObs1.getWidth()/2, vObs1.y-spObs1.getHeight()/2, spObs1.getWidth(), spObs1.getHeight());
-            batch.draw(imgReticle, vObs2.x+spObs2.getWidth()/2, vObs2.y-spObs2.getHeight()/2, spObs2.getWidth(), spObs2.getHeight());
-            batch.draw(imgReticle, vObs3.x+spObs3.getWidth()/2, vObs3.y-spObs3.getHeight()/2, spObs3.getWidth(), spObs3.getHeight());*/
-            
             batch.end();
-            /*renderHB.begin(ShapeType.Line);
-            renderHB.setColor(0, 0, 0, 0);
-            renderHB.circle(vObs1.x - spObs1.getWidth()/2, vObs1.y - spObs1.getHeight()/2, spObs1.getHeight()/2);
-            renderHB.circle(vObs2.x - spObs2.getWidth()/2, vObs2.y - spObs2.getHeight()/2, spObs2.getHeight()/2);
-            renderHB.circle(vObs3.x - spObs3.getWidth()/2, vObs3.y - spObs3.getHeight()/2, spObs3.getHeight()/2);
-            renderHB.circle(vChar.x - spChar.getWidth()/2, vChar.y - spChar.getHeight()/2, spChar.getHeight()/2);
-            renderHB.end();*/
         }
+        //Miscellaneous key sensing below.
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
                 menuMusic.stop();
                 bgMusic.stop();
