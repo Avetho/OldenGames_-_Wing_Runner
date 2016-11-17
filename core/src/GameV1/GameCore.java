@@ -24,41 +24,50 @@ import java.util.Random;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import java.awt.geom.Ellipse2D;
+import com.badlogic.gdx.utils.Timer;
 
 public class GameCore extends ApplicationAdapter implements InputProcessor {
-
-    //Temp Variables
-    double dR1S = 1, dR2S = 1, dR3S = 1;
-    
     //Permanent Variables
-    //Ellipse2D elHB1, elHB2, elHB3, elHBP;
-    Vector2 vChar;
-    Vector2 vObs1;
-    Vector2 vObs2;
-    Vector2 vObs3;
-    Vector2 vRet;
-    Random rand;
-    SpriteBatch batch;
-    ShapeRenderer renderHB;
-    Texture imgReticle, imgSprite, imgSprite2, imgObstacle, imgObstacle2, imgBg, imgBg2, imgPause, imgBox, imgMenu, imgStart, imgMusic;
-    Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG, spStart, spMusic, spHitRestore;
-    int nCursorX, nCursorY, nWindW, nWindH, nRockX1, nRockX2, nRockX3;
-    float fCharRot, fCharMove, fCharAdditive, fPosX;
-    boolean isTouch, isPaused, isMenu, isMusicOn, isMMusic, isMusicEnable, isMusicClassic;
-    boolean hasHit1, hasHit2, hasHit3;
-    private ExtendViewport viewport;
-    Music menuMusic, bgMusic, menuMusicFly, menuMusicSci, bgMusicFly, bgMusicSci;
-    GameCore game;
-    EntityPlayer objPlayer;
-    float fbgX = 0;
+    //Ellipse2D elHB1, elHB2, elHB3, elHBP; //Was going to be hit boxes. Pythagorean Theorem is better at it :/
+    Vector2 vChar; //Character position.
+    Vector2 vObs1; //Top Rock position.
+    Vector2 vObs2; //Middle Rock position.
+    Vector2 vObs3; //Bottom Rock position.
+    Vector2 vRet; //Mouse position on y coordinates. The Badlogic logo is the character rotation aim point.
+    Random rand; //To randomize the rocks' speeds and other things.
+    SpriteBatch batch; //To draw all the things.
+    ShapeRenderer renderHB; //To render all the shapes, of which are none as of yet.
+    Texture imgReticle, imgSprite, imgSprite2, imgObstacle, imgObstacle2, imgBg, imgBg2, imgPause, imgBox, imgMenu, imgMenuInv, imgStart, imgMusic; //All that you see are belong to these.
+    Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG, spStart, spMusic, spHitRestore; //All the stuff are belong to here.
+    int nCursorX, nCursorY, nWindW, nWindH, nRockX1, nRockX2, nRockX3; //More generic variables.
+    float fCharRot, fCharMove, fCharAdditive, fPosX; //Generic variables for the game.
+    boolean isTouch, isPaused, isMenu, isMusicOn, isMMusic, isMusicEnable, isMusicClassic; //If you are doing these things.
+    boolean hasHit1, hasHit2, hasHit3; //To check if you have hit a rock.
+    double dR1S = 1, dR2S = 1, dR3S = 1; //Moving across at the speed of rock! These are the rocks' speeds.
+    //private ExtendViewport viewport; //This was to fix the y coordinates.
+    Music menuMusic, bgMusic, menuMusicFly, menuMusicSci, bgMusicFly, bgMusicSci; //The tracks. First two are the played ones, last ones are just to set the playing ones.
+    GameCore game; //The game. A new instance is created.
+    EntityPlayer objPlayer; //The player. What else? A new instance is created.
+    float fbgX = 0; //So the background scrolls. It was not intended to be uniform with the rocks.
     OrthographicCamera camera;
     int nLives, nScore;
-    BitmapFont fontGeneric;//http://stackoverflow.com/questions/12466385/how-can-i-draw-text-using-libgdx-java
+    BitmapFont fontGeneric; //http://stackoverflow.com/questions/12466385/how-can-i-draw-text-using-libgdx-java
+    double dRockSpeed, dRockSpeedO; //dRockSpeedO is original speed so only one number has to be changed.
+    float fSpeedMod; //Changes vertical speed based on rotation. Up is slower than down.
+    int nScoreInc; //Every time this hits 1000 it is set to 0 after incrementing the score by one: nScore++;
+    boolean justStarted; //Gives you a delay from starting to avoid 3 score instantly, and to avoid losing a life at the start.
+    int nTime; //Counting until you are free from danger at the start.
+    int nMode; //The mode of the game. 1 is easy, 2 is intermediate, 3 is hard, 4 is colormania, 5 is shadow.
 
     @Override
     public void create() {
+        dRockSpeed = 5;
+        nMode = 1;
+        dRockSpeedO = dRockSpeed;
         fontGeneric = new BitmapFont();
-        nLives = 99;
+        justStarted = true;
+        fSpeedMod = 0;
+        nLives = 3;
         hasHit1 = false;
         hasHit2 = false;
         hasHit3 = false;
@@ -95,6 +104,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         batch = new SpriteBatch();
         renderHB = new ShapeRenderer();
         imgMenu = new Texture("Main_Menu2.png");
+        imgMenuInv = new Texture("Main_Menu2-Invis.png");
         imgPause = new Texture("pausedImg.png");
         imgReticle = new Texture("badlogic.jpg");
         imgSprite = new Texture("characterSprite1.png");
@@ -153,8 +163,39 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             }
         }
         if (isMenu) {
+            if(Gdx.input.isKeyJustPressed(Input.Keys.D) && justStarted) {
+                nMode++;
+                if(nMode == 6) {
+                    nMode = 1;
+                }
+            }
+            if(Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+                System.out.println("Quit early with score of: " + nScore + ".");
+                create();
+            }
+            if(justStarted) {
+                batch.begin();
+                batch.draw(imgMenu, 0, 0, nWindW, nWindH);
+                batch.end();
+            }
+            else {
+                batch.begin();
+                batch.draw(imgMenuInv, 0, 0, nWindW, nWindH);
+                batch.end();
+            }
             batch.begin();
-            batch.draw(imgMenu, 0, 0, nWindW, nWindH);
+            fontGeneric.draw(batch, "Score: " + Integer.toString(nScore), nWindW/50, nWindH);
+            if(nMode == 1) {
+                fontGeneric.draw(batch, "Mode: Novice (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
+            } else if(nMode == 2) {
+                fontGeneric.draw(batch, "Mode: Intermediate (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
+            } else if(nMode == 3) {
+                fontGeneric.draw(batch, "Mode: Difficult (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
+            } else if(nMode == 4) {
+                fontGeneric.draw(batch, "Mode: Spazzmatica (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
+            } else if(nMode == 5) {
+                fontGeneric.draw(batch, "Mode: Shadow (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
+            }
             batch.end();
             if (menuMusic.isPlaying() == false) {
                 bgMusic.stop();
@@ -167,155 +208,183 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 isMenu = false;
             }
         } else if (isMenu == false) {
+            if(nMode == 5) {
+                batch.setColor(128, 128, 128, 50); //A fun 'bug' I came across while color changing was a possible "Shadow" mode.
+            }
+            else {
+                batch.setColor(Color.WHITE);
+            }
+            if(nMode == 5) {
+                batch.setColor(0, 0, 0, 100); //You can barely see the player, rocks, and no background, just all on a crimson color backdrop.
+            }
+            if(nMode == 4) {
+                batch.setColor(rand.nextInt(255 - 200 + 1), rand.nextInt(255 - 200 + 1), rand.nextInt(255 - 200 + 1), 100);
+            }
+            if(nTime >= 150) {
+                justStarted = false;
+            }
+            if(nTime < 150) {
+                nTime++;
+            }
+            if(nScore % 100 == 0 && nScore != 0) {
+                nLives++;
+                nScore++;
+            }
+            if(Gdx.input.justTouched()) {
+                hasHit1 = false;
+                hasHit2 = false;
+                hasHit3 = false;
+            }
             if (bgMusic.isPlaying() == false) {
                 bgMusic.setLooping(true);
                 bgMusic.play();//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
+            }
+            if(dRockSpeed > 2 + nMode/5*2) {
+                dRockSpeed -= 0.00025 - dRockSpeed/49126;
             }
             //nCursorX = Gdx.input.getX();
             nCursorY = nWindH - Gdx.input.getY();
             //fCharRot = findAngle(fPosX, fPosY, nWindW * 2 / 3, nCursorY);
             fCharRot = findAngle2(vChar, vRet);
             fCharMove = (vRet.y - vChar.y) / 13;
-            vChar.add(0, fCharMove);
+            //Grants vertical movement, slows upward speed more than downward using fSpeedMod.
+            vChar.add(0, fCharMove*(1/(float)dRockSpeed)+fSpeedMod);
+            //Rotates the player. Makes it look cool and advanced. It is.
             spChar.setRotation(fCharRot);
-            fPosX = nWindW / 5;
+            //Lets you know where you are going when not using a mouse.
             vRet.set(nWindW * 2 / 3, nCursorY - spReticle.getHeight() / 2);
-            //if(Gdx.input.isKeyPressed(Keys.F11))Gdx.graphics.setDisplayMode(Gdx.graphics.);
-            Gdx.gl.glClearColor(0.128f, 0, 0, 1);
+            //Makes background a cool color.
+            Gdx.gl.glClearColor(0.256f, 0.128f, 0.128f, 1);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-            fPosX = nWindW / 5;
-            //batch.setTransformMatrix(game.getCamera().view);
-            //camera.update();
-            fbgX-=3;
+            //Rotation conversion by inversion. Makes calculations easier afterward by keeping it positive ;)
+            if(fCharRot > 0) { //Sets the rotation to a smoother number set for subsequent calculations.
+                fCharRot-=180;
+            }
+            else if(fCharRot < 0) { //Sets the rotation to a smoother number set for subsequent calculations.
+                fCharRot+=180;
+            }
+            //Makes character move a bit forward when pitching down and back when pitching up. Can look like a flying fish when pitching fast enough XD
+            if(fCharRot > 0) {
+                fPosX = nWindW / 5 + (fCharRot-180)*2;
+            }
+            else if(fCharRot < 0) {
+                fPosX = nWindW / 5 - (fCharRot+180)*2;
+            }
+            //Makes character move slower up than down. Effect becomes moot at higher speeds as it doesn't scale with speed. At higher speed a lower pitch is needed to maintain altitude. Somewhat simulates drag.
+            fSpeedMod = (fCharRot+120)/120;
+            //Moving background picture. Looks cool and gets weird under high acceleration, like it desyncs. That isn't an issue, it a warp feature.
+            fbgX-=3*(1/dRockSpeed*dRockSpeedO);
             if(fbgX < -nWindW) {
                 fbgX=0;
             }
-            fCharMove += nWindH/252;
+            //Scaled gravitational effect on the player.
+            fCharMove += nWindH/52;
+            //Rock movement. Makes them go fast at random speed according to the global speed modifier.
             if(vObs1.x > -spObs1.getWidth()) {
                 //nRockX1-=dR1S;
                 vObs1.sub((float)dR1S, 0);
             } else {
-                dR1S = (rand.nextDouble()+1)*(8/(860/nWindH));
+                dR1S = (rand.nextDouble()+2)*(24/(860/nWindH)/dRockSpeed);
                 //nRockX1 = nWindW + nWindW/10;
-                vObs1.add(nWindW + nWindW/3, 0);
+                vObs1.add(nWindW*3, 0);
             }
             if(vObs2.x > -spObs2.getWidth()) {
                 //nRockX2-=dR2S;
                 vObs2.sub((float)dR2S, 0);
             } else {
-                dR2S = (rand.nextDouble()+1)*(10/(860/nWindH));
+                dR2S = (rand.nextDouble()+2)*(30/(860/nWindH)/dRockSpeed);
                 //nRockX2 = nWindW + nWindW/10;
-                vObs2.add(nWindW + nWindW/3, 0);
+                vObs2.add(nWindW*3, 0);
             }
             if(vObs3.x > -spObs3.getWidth()) {
                 //nRockX3-=dR3S;
                 vObs3.sub((float)dR3S, 0);
             } else {
-                dR3S = (rand.nextDouble()+1)*(12/(860/nWindH));
+                dR3S = (rand.nextDouble()+2)*(36/(860/nWindH)/dRockSpeed);
                 //nRockX3 = nWindW + nWindW/10;
-                vObs3.add(nWindW + nWindW/3, 0);
+                vObs3.add(nWindW*3, 0);
             }
+            //Keeps the rock rails intact, could be done better though.
             vObs1.set(vObs1.x, nWindH - nWindH / 4 - spObs1.getHeight() / 2 + nWindH / 12);
             vObs2.set(vObs2.x, nWindH / 2 - spObs2.getHeight() / 2);
             vObs3.set(vObs3.x, nWindH / 2 - nWindH / 4 - spObs3.getHeight() / 2 - nWindH / 12);
-            /*elHB1.setFrame(vObs1.x, vObs1.y, spObs1.getWidth(), spObs1.getHeight());
-            elHB2.setFrame(vObs2.x, vObs2.y, spObs2.getWidth(), spObs2.getHeight());
-            elHB3.setFrame(vObs3.x, vObs3.y, spObs3.getWidth(), spObs3.getHeight());
-            elHBP.setFrame(vChar.x, vChar.y, spChar.getWidth(), spChar.getHeight());*/
-            
-            ////////////////////////////////////////
-            
-            /*if(elHBP.getBounds2D().getCenterX()-elHB1.getBounds2D().getCenterX()<elHB1.getBounds2D().getWidth() ||
-                    elHBP.getBounds2D().getCenterX()-elHB2.getBounds2D().getCenterX()<elHB2.getBounds2D().getWidth() ||
-                    elHBP.getBounds2D().getCenterX()-elHB3.getBounds2D().getCenterX()<elHB3.getBounds2D().getWidth()) {
-                if(elHBP.getBounds2D().getCenterY()-elHB1.getBounds2D().getCenterY()-elHB1.getBounds2D().getHeight()<elHB1.getBounds2D().getHeight() ||
-                    elHBP.getBounds2D().getCenterY()-elHB2.getBounds2D().getCenterY()-elHB2.getBounds2D().getHeight()<elHB2.getBounds2D().getHeight() ||
-                    elHBP.getBounds2D().getCenterY()-elHB3.getBounds2D().getCenterY()-elHB3.getBounds2D().getHeight()<elHB3.getBounds2D().getHeight()) {
-                    isMenu=true;
-                    System.out.println(nScore);
-                    create();
-                }
-            }*/
-            
-            if(!hasHit1 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs1.x+spObs1.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs1.y+spObs1.getHeight()/2), 2)) < spChar.getHeight()/2+spObs1.getHeight()/2) {
+            //Hit detection below. Has no mercy on it's own.
+            if(!hasHit1 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs1.x+spObs1.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs1.y+spObs1.getHeight()/2), 2)) < spChar.getHeight()/2+spObs1.getHeight()/2 && !justStarted) {
                 //System.out.println("Hit On 1");
                 nLives--;
                 hasHit1 = true;
             }
-            if(!hasHit2 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs2.x+spObs2.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs2.y+spObs2.getHeight()/2), 2)) < spChar.getHeight()/2+spObs2.getHeight()/2) {
+            if(!hasHit2 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs2.x+spObs2.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs2.y+spObs2.getHeight()/2), 2)) < spChar.getHeight()/2+spObs2.getHeight()/2 && !justStarted) {
                 //System.out.println("Hit On 2");
                 nLives--;
                 hasHit2 = true;
             }
-            if(!hasHit3 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs3.x+spObs3.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs3.y+spObs3.getHeight()/2), 2)) < spChar.getHeight()/2+spObs3.getHeight()/2) {
+            if(!hasHit3 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs3.x+spObs3.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs3.y+spObs3.getHeight()/2), 2)) < spChar.getHeight()/2+spObs3.getHeight()/2 && !justStarted) {
                 //System.out.println("Hit On 3");
+                System.out.println(Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs3.x+spObs3.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs3.y+spObs3.getHeight()/2), 2)));
+                System.out.println(spChar.getHeight()/2+spObs3.getHeight()/2);
                 nLives--;
                 hasHit3 = true;
             }
-            if(vChar.x > vObs1.x - nWindW/2 && vChar.x < vObs1.x - nWindW/3 && hasHit1) {
-                nScore++;
+            //Hit reapeat defense below. Stops insta-death on first impact in modes with more than 1 life.
+            if(vChar.x >= vObs1.x + spObs1.getWidth() && vChar.x <= vObs1.x + nWindW/25 + spObs1.getWidth() && hasHit1) {
                 hasHit1 = false;
             }
-            if(vChar.x > vObs2.x - nWindW/2 && vChar.x < vObs2.x - nWindW/3 && hasHit2) {
-                nScore++;
+            if(vChar.x >= vObs2.x + spObs2.getWidth() && vChar.x <= vObs2.x + nWindW/25 + spObs2.getWidth() && hasHit2) {
                 hasHit2 = false;
             }
-            if(vChar.x > vObs3.x - nWindW/2 && vChar.x < vObs3.x - nWindW/3 && hasHit3) {
-                nScore++;
+            if(vChar.x >= vObs3.x + spObs3.getWidth() && vChar.x <= vObs3.x + nWindW/25 + spObs3.getWidth() && hasHit3) {
                 hasHit3 = false;
             }
+            //Scoring below.
+            if(vChar.x >= vObs1.x + spObs1.getWidth() && vChar.x <= vObs1.x + nWindW/25 + spObs1.getWidth() && !hasHit1 && !justStarted) {
+                nScore++;
+            }
+            if(vChar.x >= vObs2.x + spObs2.getWidth() && vChar.x <= vObs2.x + nWindW/25 + spObs2.getWidth() && !hasHit2 && !justStarted) {
+                nScore++;
+            }
+            if(vChar.x >= vObs3.x + spObs3.getWidth() && vChar.x <= vObs3.x + nWindW/25 + spObs3.getWidth() && !hasHit3 && !justStarted) {
+                nScore++;
+            }
+            //Death sensor below.
             if(nLives == 0) {
                 isMenu=true;
                 System.out.println(nScore);
                 create();
             }
-            //System.out.println(nLives);
-            //System.out.println(nScore);
-            
-            /*System.out.println(elHBP.getBounds2D().getCenterY());
-            System.out.println(elHB3.getBounds2D().getCenterX());
-            System.out.println(elHB3.getBounds2D().getCenterY());
-            System.out.println((elHBP.getBounds2D().getCenterX()-elHB1.getBounds2D().getCenterX()>elHB1.getBounds2D().getWidth()));*/
-            
-            ////////////////////////////////////////
-            
+            //Graphics below.
             batch.begin();
-            //batch.setProjectionMatrix(camera.combined);
 
             batch.draw(spBG, fbgX, 0, nWindW, nWindH);
             batch.draw(spBG, fbgX + nWindW, 0, nWindW, nWindH);
+            
             batch.draw(spBox, 0, nWindH);
             batch.draw(spBox, 0, 0);
+            
             batch.draw(spObs1, vObs1.x, vObs1.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
             batch.draw(spObs2, vObs2.x, vObs2.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
             batch.draw(spObs3, vObs3.x, vObs3.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
-            //batch.draw(spObs4, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
-            //batch.draw(spObs5, Gdx.graphics.getWidth() - Gdx.graphics.getWidth() / 5, 45);
+            
             batch.draw(spChar, fPosX - spChar.getWidth() / 2, vChar.y - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
-            //batch.draw(spChar, fPosX - spChar.getWidth() / 2, fPosY - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
+            //objPlayer.render(batch);
+            
             batch.draw(spReticle, vRet.x, vRet.y, spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
-            //batch.end();
+            
             fontGeneric.draw(batch, "Score: " + Integer.toString(nScore), nWindW/50, nWindH);
             fontGeneric.draw(batch, "Lives: " + Integer.toString(nLives), nWindW/6, nWindH);
             fontGeneric.draw(batch, "FPS: " + Float.toString(Gdx.graphics.getFramesPerSecond()), nWindW/50, nWindH/2+nWindH/3+nWindH/9);
-            fontGeneric.draw(batch, "TRS: " + Double.toString(dR1S), nWindW/50, nWindH/2+nWindH/3+nWindH/14);
-            fontGeneric.draw(batch, "MRS: " + Double.toString(dR2S), nWindW/50, nWindH/2+nWindH/3+nWindH/21);
-            fontGeneric.draw(batch, "BRS: " + Double.toString(dR3S), nWindW/50, nWindH/2+nWindH/3+nWindH/48);
+            fontGeneric.draw(batch, "TRS: " + Double.toString(Math.round(dR1S*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3+nWindH/14);
+            fontGeneric.draw(batch, "MRS: " + Double.toString(Math.round(dR2S*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3+nWindH/23);
+            fontGeneric.draw(batch, "BRS: " + Double.toString(Math.round(dR3S*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3+nWindH/75);
+            fontGeneric.draw(batch, "Speed Multiplier: " + Double.toString(Math.round((1/dRockSpeed*dRockSpeedO)*10000.0)/10000.0), nWindW/50, nWindH/2+nWindH/3-nWindH/65);
             
-            /*batch.draw(imgReticle, fPosX+spChar.getWidth()/2, vChar.y-spChar.getHeight()/2, spChar.getWidth(), spChar.getHeight());
-            batch.draw(imgReticle, vObs1.x+spObs1.getWidth()/2, vObs1.y-spObs1.getHeight()/2, spObs1.getWidth(), spObs1.getHeight());
-            batch.draw(imgReticle, vObs2.x+spObs2.getWidth()/2, vObs2.y-spObs2.getHeight()/2, spObs2.getWidth(), spObs2.getHeight());
-            batch.draw(imgReticle, vObs3.x+spObs3.getWidth()/2, vObs3.y-spObs3.getHeight()/2, spObs3.getWidth(), spObs3.getHeight());*/
+            fontGeneric.draw(batch, "hasHit1: " + hasHit1, 0, 250);
+            fontGeneric.draw(batch, "hasHit2: " + hasHit2, 0, 350);
+            fontGeneric.draw(batch, "hasHit3: " + hasHit3, 0, 450);
             
             batch.end();
-            /*renderHB.begin(ShapeType.Line);
-            renderHB.setColor(0, 0, 0, 0);
-            renderHB.circle(vObs1.x - spObs1.getWidth()/2, vObs1.y - spObs1.getHeight()/2, spObs1.getHeight()/2);
-            renderHB.circle(vObs2.x - spObs2.getWidth()/2, vObs2.y - spObs2.getHeight()/2, spObs2.getHeight()/2);
-            renderHB.circle(vObs3.x - spObs3.getWidth()/2, vObs3.y - spObs3.getHeight()/2, spObs3.getHeight()/2);
-            renderHB.circle(vChar.x - spChar.getWidth()/2, vChar.y - spChar.getHeight()/2, spChar.getHeight()/2);
-            renderHB.end();*/
         }
+        //Miscellaneous key sensing below.
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
                 menuMusic.stop();
                 bgMusic.stop();
