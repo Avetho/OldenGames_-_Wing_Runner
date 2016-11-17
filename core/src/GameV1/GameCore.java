@@ -163,21 +163,39 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             }
         }
         if (isMenu) {
-            batch.begin();
-            if(Gdx.input.isKeyJustPressed(Input.Keys.D)) {
+            if(Gdx.input.isKeyJustPressed(Input.Keys.D) && justStarted) {
                 nMode++;
                 if(nMode == 6) {
                     nMode = 1;
                 }
             }
+            if(Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+                System.out.println("Quit early with score of: " + nScore + ".");
+                create();
+            }
             if(justStarted) {
+                batch.begin();
                 batch.draw(imgMenu, 0, 0, nWindW, nWindH);
+                batch.end();
             }
             else {
+                batch.begin();
                 batch.draw(imgMenuInv, 0, 0, nWindW, nWindH);
+                batch.end();
             }
+            batch.begin();
             fontGeneric.draw(batch, "Score: " + Integer.toString(nScore), nWindW/50, nWindH);
-            fontGeneric.draw(batch, "Mode: " + Integer.toString(nMode), nWindW/25, nWindH/2);
+            if(nMode == 1) {
+                fontGeneric.draw(batch, "Mode: Novice (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
+            } else if(nMode == 2) {
+                fontGeneric.draw(batch, "Mode: Intermediate (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
+            } else if(nMode == 3) {
+                fontGeneric.draw(batch, "Mode: Difficult (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
+            } else if(nMode == 4) {
+                fontGeneric.draw(batch, "Mode: Spazzmatica (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
+            } else if(nMode == 5) {
+                fontGeneric.draw(batch, "Mode: Shadow (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
+            }
             batch.end();
             if (menuMusic.isPlaying() == false) {
                 bgMusic.stop();
@@ -221,7 +239,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 bgMusic.setLooping(true);
                 bgMusic.play();//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
             }
-            if(dRockSpeed > 3) {
+            if(dRockSpeed > 2 + nMode/5*2) {
                 dRockSpeed -= 0.00025 - dRockSpeed/49126;
             }
             //nCursorX = Gdx.input.getX();
@@ -236,7 +254,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             //Lets you know where you are going when not using a mouse.
             vRet.set(nWindW * 2 / 3, nCursorY - spReticle.getHeight() / 2);
             //Makes background a cool color.
-            Gdx.gl.glClearColor(0.128f, 0, 0, 1);
+            Gdx.gl.glClearColor(0.256f, 0.128f, 0.128f, 1);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             //Rotation conversion by inversion. Makes calculations easier afterward by keeping it positive ;)
             if(fCharRot > 0) { //Sets the rotation to a smoother number set for subsequent calculations.
