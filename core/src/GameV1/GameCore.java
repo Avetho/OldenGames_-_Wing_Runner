@@ -58,16 +58,18 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     boolean justStarted; //Gives you a delay from starting to avoid 3 score instantly, and to avoid losing a life at the start.
     int nTime; //Counting until you are free from danger at the start.
     int nMode; //The mode of the game. 1 is easy, 2 is intermediate, 3 is hard, 4 is colormania, 5 is shadow.
+    int nLivesDef = 9; //Default Lives. Used to calculate different amounts of lives per mode basis.
 
     @Override
     public void create() {
         dRockSpeed = 5;
         nMode = 1;
+        nTime = 0;
         dRockSpeedO = dRockSpeed;
         fontGeneric = new BitmapFont();
         justStarted = true;
         fSpeedMod = 0;
-        nLives = 3;
+        nLives = nLivesDef;
         hasHit1 = false;
         hasHit2 = false;
         hasHit3 = false;
@@ -155,10 +157,14 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public void render() {
+        batch.setColor(batch.getColor().r, batch.getColor().g, batch.getColor().b, 0.5f);
         if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
             if (isMenu == false) {
                 isMenu = true;
             } else {
+                batch.flush();
+                batch.dispose();
+                Gdx.input.vibrate(10);
                 System.exit(3);
             }
         }
@@ -168,8 +174,25 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 if(nMode == 6) {
                     nMode = 1;
                 }
+                if(nMode == 1) {///////////This code deals with lives changes. nLivesDef is the default amount.
+                    nLives = nLivesDef;//The default amount. Easy mode.
+                }
+                if(nMode == 2) {
+                    nLives = nLivesDef/2;//Medium difficulty gives half of the standard lives.
+                }
+                if(nMode == 3) {
+                    nLives = 1;//You always have 1 life in hard. It's hard for a reason. No mercy for beginners.
+                }
+                if(nMode == 4) {
+                    nLives = nLivesDef/3;//Phycadellic mode gives you a third of standard lives.
+                }
+                if(nMode == 5) {
+                    nLives = nLivesDef/2 + nLivesDef/3;//Shadow is hard to see, so you get a chance with 5/6 of the standard lives.
+                }//////////////////////////
             }
             if(Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+                bgMusic.stop();
+                menuMusic.stop();
                 System.out.println("Quit early with score of: " + nScore + ".");
                 create();
             }
@@ -192,7 +215,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             } else if(nMode == 3) {
                 fontGeneric.draw(batch, "Mode: Difficult (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
             } else if(nMode == 4) {
-                fontGeneric.draw(batch, "Mode: Spazzmatica (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
+                fontGeneric.draw(batch, "Mode: Psychedelic (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
             } else if(nMode == 5) {
                 fontGeneric.draw(batch, "Mode: Shadow (" + Integer.toString(nMode) + ")", nWindW/25, nWindH/2);
             }
@@ -208,17 +231,15 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 isMenu = false;
             }
         } else if (isMenu == false) {
-            if(nMode == 5) {
-                batch.setColor(128, 128, 128, 50); //A fun 'bug' I came across while color changing was a possible "Shadow" mode.
+            if(nMode == 5) { //A fun 'bug' I came across while color changing was a possible "Shadow" mode.
+                batch.setColor(0, 0, 0, 0.5f); //You can barely see the player, rocks, and no background, just all on a crimson color backdrop.
+                Gdx.gl.glClearColor(0.256f, 0.128f, 0.128f, 1);
             }
             else {
-                batch.setColor(Color.WHITE);
-            }
-            if(nMode == 5) {
-                batch.setColor(0, 0, 0, 100); //You can barely see the player, rocks, and no background, just all on a crimson color backdrop.
+                batch.setColor(batch.getColor().r, batch.getColor().g, batch.getColor().b, 0.5f);
             }
             if(nMode == 4) {
-                batch.setColor(rand.nextInt(255 - 200 + 1), rand.nextInt(255 - 200 + 1), rand.nextInt(255 - 200 + 1), 100);
+                batch.setColor(rand.nextInt(255 - 100 + 1), rand.nextInt(255 - 100 + 1), rand.nextInt(255 - 100 + 1), 0.5f);
             }
             if(nTime >= 150) {
                 justStarted = false;
@@ -254,7 +275,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             //Lets you know where you are going when not using a mouse.
             vRet.set(nWindW * 2 / 3, nCursorY - spReticle.getHeight() / 2);
             //Makes background a cool color.
-            Gdx.gl.glClearColor(0.256f, 0.128f, 0.128f, 1);
+            Gdx.gl.glClearColor(0, 0, 0, 0.5f);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             //Rotation conversion by inversion. Makes calculations easier afterward by keeping it positive ;)
             if(fCharRot > 0) { //Sets the rotation to a smoother number set for subsequent calculations.
@@ -310,19 +331,17 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             vObs3.set(vObs3.x, nWindH / 2 - nWindH / 4 - spObs3.getHeight() / 2 - nWindH / 12);
             //Hit detection below. Has no mercy on it's own.
             if(!hasHit1 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs1.x+spObs1.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs1.y+spObs1.getHeight()/2), 2)) < spChar.getHeight()/2+spObs1.getHeight()/2 && !justStarted) {
-                //System.out.println("Hit On 1");
+                System.out.println("Hit On 1");
                 nLives--;
                 hasHit1 = true;
             }
             if(!hasHit2 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs2.x+spObs2.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs2.y+spObs2.getHeight()/2), 2)) < spChar.getHeight()/2+spObs2.getHeight()/2 && !justStarted) {
-                //System.out.println("Hit On 2");
+                System.out.println("Hit On 2");
                 nLives--;
                 hasHit2 = true;
             }
             if(!hasHit3 && Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs3.x+spObs3.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs3.y+spObs3.getHeight()/2), 2)) < spChar.getHeight()/2+spObs3.getHeight()/2 && !justStarted) {
-                //System.out.println("Hit On 3");
-                System.out.println(Math.sqrt(Math.pow((vChar.x+spChar.getWidth()/2)-(vObs3.x+spObs3.getWidth()/2), 2) + Math.pow((vChar.y-spChar.getHeight()/2)-(vObs3.y+spObs3.getHeight()/2), 2)));
-                System.out.println(spChar.getHeight()/2+spObs3.getHeight()/2);
+                System.out.println("Hit On 3");
                 nLives--;
                 hasHit3 = true;
             }
@@ -348,10 +367,17 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             }
             //Death sensor below.
             if(nLives == 0) {
+                bgMusic.stop();
+                menuMusic.stop();
                 isMenu=true;
                 System.out.println(nScore);
                 create();
             }
+            
+            spObs1.setSize(nWindH/3 - nWindH/18, nWindH/3 - nWindH/18);
+            spObs2.setSize(nWindH/3 - nWindH/18, nWindH/3 - nWindH/18);
+            spObs3.setSize(nWindH/3 - nWindH/18, nWindH/3 - nWindH/18);
+            spChar.setSize(nWindH / 12, nWindH / 15);
             //Graphics below.
             batch.begin();
 
@@ -361,12 +387,16 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             batch.draw(spBox, 0, nWindH);
             batch.draw(spBox, 0, 0);
             
-            batch.draw(spObs1, vObs1.x, vObs1.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
-            batch.draw(spObs2, vObs2.x, vObs2.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
-            batch.draw(spObs3, vObs3.x, vObs3.y, nWindH/3 - nWindH/15, nWindH/3 - nWindH/15);
+            batch.draw(spObs1, vObs1.x, vObs1.y, nWindH/3 - nWindH/18, nWindH/3 - nWindH/18);
+            batch.draw(spObs2, vObs2.x, vObs2.y, nWindH/3 - nWindH/18, nWindH/3 - nWindH/18);
+            batch.draw(spObs3, vObs3.x, vObs3.y, nWindH/3 - nWindH/18, nWindH/3 - nWindH/18);
+            
+            //batch.end();
             
             batch.draw(spChar, fPosX - spChar.getWidth() / 2, vChar.y - spChar.getHeight() / 2, spChar.getOriginX(), spChar.getOriginY(), spChar.getHeight(), spChar.getWidth(), spChar.getScaleX(), spChar.getScaleY(), spChar.getRotation(), true);
-            //objPlayer.render(batch);
+            //objPlayer.render(spChar);
+            
+            //batch.begin();
             
             batch.draw(spReticle, vRet.x, vRet.y, spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
             
