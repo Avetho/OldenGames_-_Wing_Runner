@@ -1,5 +1,6 @@
-package gdx.menu.Screens;
+package GameV1;
 
+import GameV1.GameCore;
 import GameV1.GameMenu;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
@@ -10,94 +11,94 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import gdx.menu.GamMenu;
 import gdx.menu.TbMenu;
 import gdx.menu.TbsMenu;
 
-public class ScrMenu implements Screen, InputProcessor {
-    GamMenu gamMenu;
+public class ScrGameover implements Screen, InputProcessor {
+
+    GameMenu.GamMenu gamMenu;
     TbsMenu tbsMenu;
-    TbMenu tbPlay, tbGameover;
+    TbMenu tbPlay, tbMenu;
     Stage stage;
     SpriteBatch batch;
     BitmapFont screenName;
 
-    public ScrMenu(GamMenu _gamMenu) {  //Referencing the main class.
+    public ScrGameover(GameMenu.GamMenu _gamMenu, GameCore gameBlock) {  //Referencing the main class.
         gamMenu = _gamMenu;
     }
 
-    public ScrMenu(GameMenu.GamMenu aThis) {
+    public ScrGameover(GameMenu.GamMenu aThis) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
     public void show() {
         stage = new Stage();
         tbsMenu = new TbsMenu();
         batch = new SpriteBatch();
         screenName = new BitmapFont();
-        tbPlay = new TbMenu("PLAY", tbsMenu);
-        tbGameover = new TbMenu("BACK", tbsMenu);
-        tbGameover.setY(0);
-        tbGameover.setX(0);
+        tbPlay = new TbMenu("BACK", tbsMenu);
+        tbMenu = new TbMenu("MENU", tbsMenu);
         tbPlay.setY(0);
-        tbPlay.setX(440);
+        tbPlay.setX(0);
+        tbMenu.setY(0);
+        tbMenu.setX(440);
+        stage.addActor(tbMenu);
         stage.addActor(tbPlay);
-        stage.addActor(tbGameover);
         Gdx.input.setInputProcessor(stage);
+        btnMenuListener();
         btnPlayListener();
-        btnGameoverListener();
     }
 
+    @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 1, 0, 1); //Green background.
+        Gdx.gl.glClearColor(0, 0, 0, 1); //black background.
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
-        screenName.draw(batch, "This is the MENU screen", 230, 275);
+        screenName.draw(batch, "This is the GAMEOVER screen", 230, 275);
         batch.end();
         stage.act();
         stage.draw();
     }
 
-    public void btnPlayListener() {
-        tbPlay.addListener(new ChangeListener() {
+    public void btnMenuListener() {
+        tbMenu.addListener(new ChangeListener() {
+            @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                
-                gamMenu.updateState(1); // switch to Play screen.
+
+                gamMenu.updateState(0);
             }
         });
     }
 
-    public void btnGameoverListener() {
-        tbGameover.addListener(new ChangeListener() {
-            public void changed(ChangeListener.ChangeEvent event, Actor actor) {               
-                gamMenu.updateState(2);
+    public void btnPlayListener() {
+        tbPlay.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+
+                gamMenu.updateState(1);
             }
         });
     }
 
     @Override
     public void resize(int width, int height) {
-
     }
 
     @Override
     public void pause() {
-
     }
 
     @Override
     public void resume() {
-
     }
 
     @Override
     public void hide() {
-
     }
 
     @Override
     public void dispose() {
-
     }
 
     @Override

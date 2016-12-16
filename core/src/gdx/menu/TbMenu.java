@@ -11,6 +11,7 @@ public class TbMenu extends TextButton{
         sText = _sText;
         this.setSize(200, 80);
         this.addListener(new ClickListener() {
+            @Override
             public void clicked(InputEvent e, float x, float y) {
                 System.out.println(sText);
             }
