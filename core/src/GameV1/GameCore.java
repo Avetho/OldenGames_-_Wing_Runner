@@ -252,7 +252,6 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     @Override
     public void render() {
         batch.begin();
-        //spTap.setBounds(nCursorX, nCursorY, 1, 1);
         spTap.setPosition(nCursorX, nCursorY);
         spTap.draw(batch);
         batch.end();
@@ -308,6 +307,10 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 if(nMode == 5) {
                     System.out.println("Setting to Mode-Hardcore.");
                     nLives = 1;//Shadow is hardcore, so you get no chance unless your are really good. Same lives as hard mode.
+                }
+                if(nMode == 6) {
+                    System.out.println("Setting to ØÍ×öæÚV☼ *err-8* DEBUG.");
+                    nLives = 999;
                 }//////////////////////////
             }
             if(Gdx.input.isKeyJustPressed(Input.Keys.E)) {
@@ -361,7 +364,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 menuMusic.play();
                 menuMusic.setLooping(true);//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
             }
-            if (spStart.getBoundingRectangle().contains(nCursorX, nCursorY) && Gdx.input.isTouched()) {
+            if (spStart.getBoundingRectangle().overlaps(spTap.getBoundingRectangle()) && Gdx.input.isTouched()) {
                 menuMusic.setLooping(false);
                 menuMusic.stop();
                 isMenu = false;
