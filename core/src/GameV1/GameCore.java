@@ -32,6 +32,7 @@ import java.util.logging.Level;
 
 public class GameCore extends ApplicationAdapter implements InputProcessor {
     //Permanent Variables
+    public boolean isTouched; //Check each render cycle for a left mouse press or tap on screen. Avoids compound statement issues.
     public Vector2 vChar; //Character position.
     public Vector2 vObs1; //Top Rock position.
     public Vector2 vObs2; //Middle Rock position.
@@ -40,8 +41,8 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     public Random rand; //To randomize the rocks' speeds and other things.
     public SpriteBatch batch; //To draw all the things.
     public ShapeRenderer renderHB; //To render all the shapes, of which are none as of yet.
-    public Texture imgReticle, imgSprite, imgSprite2, imgObstacle, imgObstacle2, imgBg, imgBg2, imgPause, imgBox, imgMenu, imgMenuInv, imgStart, imgMusic, imgExit; //All that you see are belong to these.
-    public Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG, spStart, spMusic, spExit, spHitRestore; //All the stuff are belong to here.
+    public Texture imgReticle, imgSprite, imgSprite2, imgObstacle, imgObstacle2, imgBg, imgBg2, imgPause, imgBox, imgMenu, imgMenuInv, imgStart, imgMusic, imgExit, imgMode; //All that you see are belong to these.
+    public Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG, spStart, spMusic, spExit, spMode, spHitRestore; //All the stuff are belong to here.
     public int nCursorX, nCursorY, nWindW, nWindH, nRockX1, nRockX2, nRockX3; //More generic variables.
     public float fCharRot, fCharMove, fCharAdditive, fPosX; //Generic variables for the game.
     public boolean isTouch, isPaused, isMenu, isMusicOn, isMMusic, isMusicEnable, isMusicClassic; //If you are doing these things.
@@ -129,6 +130,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         imgStart = new Texture("StartButton.png");
         imgMusic = new Texture("MusicButton.png");
         imgExit = new Texture("ExitButton.png");
+        imgMode = new Texture("ModeButton.png");
         spMenuBG = new Sprite(imgMenu);
         spMenuBG.setSize(nWindW, nWindH);
         spBox = new Sprite(imgBox);
@@ -140,11 +142,17 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         //spObs5 = new Sprite(imgobstacle);
         
         spStart = new Sprite(imgStart);
+        spStart.setOrigin(nWindW/5, nWindH/5);
         spStart.setBounds(nWindW/5, nWindH/5, spStart.getWidth(), spStart.getHeight());
         spMusic = new Sprite(imgMusic);
+        spMusic.setOrigin(nWindW-nWindW/5, nWindH/5);
         spMusic.setBounds(nWindW-nWindW/5, nWindH/5, spMusic.getWidth(), spMusic.getHeight());
         spExit = new Sprite(imgExit);
+        spExit.setOrigin(nWindW/2, nWindH/5);
         spExit.setBounds(nWindW/2, nWindH/5, spExit.getWidth(), spExit.getHeight());
+        spMode = new Sprite(imgMode);
+        spMode.setOrigin(nWindW/9, nWindH/6);
+        spMode.setBounds(nWindW/9, nWindH/6, spMode.getWidth(), spMode.getHeight());
         
         //acStart = new Actor();
         //acMusic = new Actor();
@@ -251,6 +259,17 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     
     @Override
     public void render() {
+        if(Gdx.input.isTouched() || Gdx.input.isButtonPressed(Buttons.LEFT)) {
+            if(!isTouched) {
+                System.out.println("Touched.");
+                isTouched = true;
+            }
+        } else {
+            if(isTouched) {
+                System.out.println("Untouched.");
+                isTouched = false;
+            }
+        }
         batch.begin();
         spTap.setPosition(nCursorX, nCursorY);
         spTap.draw(batch);
@@ -278,13 +297,16 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             batch.draw(spStart, nWindW/5, nWindH/5);
             batch.draw(spMusic, nWindW-nWindW/5, nWindH/5);
             batch.draw(spExit, nWindW/2, nWindH/5);
+            if(justStarted) {
+                batch.draw(spMode, nWindW/9, nWindH/6);
+            }
             batch.end();
             if(Gdx.input.isKeyJustPressed(Input.Keys.S)) {
             }
-            if(Gdx.input.isKeyJustPressed(Input.Keys.D) && justStarted) {
+            if(Gdx.input.isKeyJustPressed(Input.Keys.D) && justStarted || isTouched && nCursorX >= nWindW/9 && nCursorX <= nWindW/9+spMode.getWidth() && nCursorY <= nWindH/6 && nCursorY >= nWindH/6+spMode.getHeight() && justStarted) {
                 System.out.println("Added one to mode value.");
                 nMode++;
-                if(nMode == 6) {
+                if(nMode >= 6) {
                     System.out.println("Went to mode 6. This is normal. Setting back to Mode-Easy.");
                     nMode = 1;
                 }
@@ -309,8 +331,8 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                     nLives = 1;//Shadow is hardcore, so you get no chance unless your are really good. Same lives as hard mode.
                 }
                 if(nMode == 6) {
-                    System.out.println("Setting to ØÍ×öæÚV☼ *err-8* DEBUG.");
-                    nLives = 999;
+                    System.out.println("Setting to ØÍ×öæÚV☼ñãÎ *err-6* DEBUG ACTIVE.");
+                    nLives = 9999;
                 }//////////////////////////
             }
             if(Gdx.input.isKeyJustPressed(Input.Keys.E)) {
@@ -319,7 +341,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                     Thread.sleep(1000);
                 } catch (InterruptedException ex) {
                     System.out.println("Uh oh, something happened.");
-                    java.util.logging.Logger.getLogger(GameCore.class.getName()).log(Level.SEVERE, null, ex);
+                    java.util.logging.Logger.getLogger(GameCore.class.getName()).log(Level.INFO, null, ex);
                 }
                 bgMusic.stop();
                 menuMusic.stop();
@@ -329,7 +351,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                     Thread.sleep(1500);
                 } catch (InterruptedException ex) {
                     System.out.println("Uh oh, something happened.");
-                    java.util.logging.Logger.getLogger(GameCore.class.getName()).log(Level.SEVERE, null, ex);
+                    java.util.logging.Logger.getLogger(GameCore.class.getName()).log(Level.INFO, null, ex);
                 }
                 recreate();//Recreate the game, but don't reload any sprites or music or anything.
             }
