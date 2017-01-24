@@ -25,6 +25,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import java.awt.geom.Ellipse2D;
 import com.badlogic.gdx.utils.Timer;
@@ -48,7 +49,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     public boolean isTouch, isPaused, isMenu, isMusicOn, isMMusic, isMusicEnable, isMusicClassic; //If you are doing these things.
     public boolean hasHit1, hasHit2, hasHit3; //To check if you have hit a rock.
     public double dR1S = 1, dR2S = 1, dR3S = 1; //Moving across at the speed of rock! These are the rocks' speeds.
-    public Music menuMusic, bgMusic, menuMusicFly, menuMusicSci, bgMusicFly, bgMusicSci; //The tracks. First two are the played ones, last ones are just to set the playing ones.
+    public Music menuMusic, bgMusic, menuMusicFly, menuMusicSci, bgMusicFly, bgMusicSci, bgMusicShd, bgMusicPsy; //The tracks. First two are the played ones, last ones are just to set the playing ones.
     public GameCore game; //The game. A new instance is created.
     public EntityPlayer objPlayer; //The player. What else? A new instance is created.
     public float fbgX = 0; //So the background scrolls. It was not intended to be uniform with the rocks.
@@ -63,9 +64,9 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     public int nMode; //The mode of the game. 1 is easy, 2 is intermediate, 3 is hard, 4 is colormania, 5 is shadow.
     public int nLivesDef = 9; //Default Lives. Used to calculate different amounts of lives per mode basis.
     public GameMenu menu;
-    //ClickListener buttonPress;
-    //Actor acStart, acMusic;
-    //Stage disp;
+    ClickListener buttonPress;/////////////////////////////////
+    Actor acStart, acMusic, acExit, acMode;////////////////////////////////////
+    Stage disp;////////////////////////////////////////////////
     public Texture imgTap;
     public Sprite spTap;
 
@@ -154,12 +155,27 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         spMode.setOrigin(nWindW/9, nWindH/6);
         spMode.setBounds(nWindW/9, nWindH/6, spMode.getWidth(), spMode.getHeight());
         
-        //acStart = new Actor();
-        //acMusic = new Actor();
+        
+//        acStart = new Actor();
+//        acStart.setTouchable(Touchable.enabled);
+//        acStart.addListener(buttonPress);
+//        disp.addActor(acStart);
+//        acMusic = new Actor();
+//        acMusic.setTouchable(Touchable.enabled);
+//        acMusic.addListener(buttonPress);
+//        disp.addActor(acMusic);
+//        acExit = new Actor();
+//        acExit.setTouchable(Touchable.enabled);
+//        acExit.addListener(buttonPress);
+//        disp.addActor(acExit);
+//        acMode = new Actor();
+//        acMode.setTouchable(Touchable.enabled);
+//        acMode.addListener(buttonPress);
+//        disp.addActor(acMode);
+        
+        
         imgTap = new Texture("MouseClick.png");
         spTap = new Sprite(imgTap);
-        //disp.addActor(acStart);
-        //disp.addActor(acMusic);
         spBG = new Sprite(imgBg);
         spBG.setSize(nWindW, nWindH);
         spReticle = new Sprite(imgReticle);
@@ -169,6 +185,8 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         spChar.setCenter(spChar.getWidth(), spChar.getHeight());
         spChar.setSize(nWindH / 12/*5*/, nWindH / 15);
         Gdx.input.setInputProcessor(this);
+        bgMusicShd = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins - shadow.ogg"));
+        bgMusicPsy = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins - psych.ogg"));
         menuMusicFly = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins.ogg"));
         bgMusicFly = Gdx.audio.newMusic(Gdx.files.internal("gliding_by_isaac_wilkins_loop.ogg"));
         menuMusicSci = Gdx.audio.newMusic(Gdx.files.internal("lucs-200th_floor.ogg"));//Hint next time:
@@ -181,7 +199,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         dR2S = (rand.nextDouble()+1)*12;
         dR3S = (rand.nextDouble()+1)*12;
         fontGeneric.setColor(Color.RED);
-        fontGeneric.getData().scale(1/(860/nWindH));//http://stackoverflow.com/questions/33633395/how-set-libgdx-bitmap-font-size
+        fontGeneric.getData().scale(1/(1440/nWindH));//http://stackoverflow.com/questions/33633395/how-set-libgdx-bitmap-font-size
             /*elHB1 = new Ellipse2D.Double(vObs1.x, vObs1.y, spObs1.getWidth(), spObs1.getWidth());
             elHB2 = new Ellipse2D.Double(vObs2.x, vObs2.y, spObs2.getWidth(), spObs2.getWidth());
             elHB3 = new Ellipse2D.Double(vObs3.x, vObs3.y, spObs3.getWidth(), spObs3.getWidth());
@@ -247,7 +265,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         dR2S = (rand.nextDouble()+1)*12;
         dR3S = (rand.nextDouble()+1)*12;
         fontGeneric.setColor(Color.RED);
-        fontGeneric.getData().scale(1/(860/nWindH));//http://stackoverflow.com/questions/33633395/how-set-libgdx-bitmap-font-size
+        //fontGeneric.getData().scale(1/(860/nWindH));//http://stackoverflow.com/questions/33633395/how-set-libgdx-bitmap-font-size
             /*elHB1 = new Ellipse2D.Double(vObs1.x, vObs1.y, spObs1.getWidth(), spObs1.getWidth());
             elHB2 = new Ellipse2D.Double(vObs2.x, vObs2.y, spObs2.getWidth(), spObs2.getWidth());
             elHB3 = new Ellipse2D.Double(vObs3.x, vObs3.y, spObs3.getWidth(), spObs3.getWidth());
@@ -287,12 +305,18 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             }
         }
         if (isMenu) {
-            /*disp.getActors();
-            acStart.setPosition(nWindW/5, nWindH/5);
-            acMusic.setPosition((nWindW-nWindW)/5, nWindH/5);
-            acStart.setScale(nWindW/25);
-            acMusic.setScale(nWindW/25);
-            disp.draw();*/
+            
+            
+//            disp.getActors();
+//            acStart.setPosition(nWindW/5, nWindH/5);
+//            acMusic.setPosition((nWindW-nWindW)/5, nWindH/5);
+//            acExit.setPosition(nWindW/2, nWindH/5);
+//            acMode.setPosition(nWindW/9, nWindH/6);
+//            acStart.setScale(nWindW/25);
+//            acMusic.setScale(nWindW/25);
+//            disp.draw();
+            
+            
             batch.begin();
             batch.draw(spStart, nWindW/5, nWindH/5);
             batch.draw(spMusic, nWindW-nWindW/5, nWindH/5);
@@ -301,38 +325,42 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 batch.draw(spMode, nWindW/9, nWindH/6);
             }
             batch.end();
-            if(Gdx.input.isKeyJustPressed(Input.Keys.S)) {
-            }
-            if(Gdx.input.isKeyJustPressed(Input.Keys.D) && justStarted || isTouched && nCursorX >= nWindW/9 && nCursorX <= nWindW/9+spMode.getWidth() && nCursorY <= nWindH/6 && nCursorY >= nWindH/6+spMode.getHeight() && justStarted) {
+            if(Gdx.input.isKeyJustPressed(Input.Keys.D) && justStarted || isTouched && nCursorX >= nWindW/9 && nCursorX <= nWindW/9+spMode.getWidth() && nCursorY >= nWindH-nWindH/6-spMode.getHeight() && nCursorY <= nWindH-nWindH/6 && justStarted) {
                 System.out.println("Added one to mode value.");
                 nMode++;
-                if(nMode >= 6) {
-                    System.out.println("Went to mode 6. This is normal. Setting back to Mode-Easy.");
-                    nMode = 1;
-                }
-                if(nMode == 1) {///////////This code deals with lives changes. nLivesDef is the default amount.
-                    System.out.println("Setting to Mode-Easy.");
-                    nLives = nLivesDef;//The default amount. Easy mode.
-                }
-                if(nMode == 2) {
-                    System.out.println("Setting to Mode-Medium.");
-                    nLives = nLivesDef/2;//Medium difficulty gives half of the standard lives.
-                }
-                if(nMode == 3) {
-                    System.out.println("Setting to Mode-Hard.");
-                    nLives = 1;//You always have 1 life in hard. It's hard for a reason. No mercy for beginners.
-                }
-                if(nMode == 4) {
-                    System.out.println("Setting to Mode-Medium, Type-Psych.");
-                    nLives = nLivesDef/2;//Psycadellic mode gives half of the standard lives, like Intermediate.
-                }
-                if(nMode == 5) {
-                    System.out.println("Setting to Mode-Hardcore.");
-                    nLives = 1;//Shadow is hardcore, so you get no chance unless your are really good. Same lives as hard mode.
+                if(nMode == 6 && Gdx.input.isKeyPressed(Input.Keys.H)) {
+                    nMode++;
                 }
                 if(nMode == 6) {
-                    System.out.println("Setting to ØÍ×öæÚV☼ñãÎ *err-6* DEBUG ACTIVE.");
+                    System.out.println("Went to mode 6. This is normal. Setting back to Mode-Easy.");
+                    nMode = 1;
+                } else if(nMode == 1) {///////////This code deals with lives changes. nLivesDef is the default amount.
+                    System.out.println("Setting to Mode-Easy.");
+                    bgMusic = bgMusicFly;
+                    nLives = nLivesDef;//The default amount. Easy mode.
+                } else if(nMode == 2) {
+                    System.out.println("Setting to Mode-Medium.");
+                    bgMusic = bgMusicFly;
+                    nLives = nLivesDef/2;//Medium difficulty gives half of the standard lives.
+                } else if(nMode == 3) {
+                    System.out.println("Setting to Mode-Hard.");
+                    bgMusic = bgMusicFly;
+                    nLives = 1;//You always have 1 life in hard. It's hard for a reason. No mercy for beginners.
+                } else if(nMode == 4) {
+                    System.out.println("Setting to Mode-Medium, Type-Psych.");
+                    bgMusic = bgMusicPsy;
+                    nLives = nLivesDef/2;//Psycadellic mode gives half of the standard lives, like Intermediate.
+                } else if(nMode == 5) {
+                    System.out.println("Setting to Mode-Hardcore.");
+                    bgMusic = bgMusicShd;
+                    nLives = 1;//Shadow is hardcore, so you get no chance unless your are really good. Same lives as hard mode.
+                } else if(nMode == 7) {
+                    System.out.println("Setting to ØÍ×öæÚV☼ñãÎ *err-6* DEBUG ACTIVATED.");
+                    bgMusic = bgMusicSci;
                     nLives = 9999;
+                } else if(nMode >= 8) {
+                    System.out.println("Setting to ØÊñüæÖº☼§ãÎ *err-6* DEBUG DEACTIVATED. Normal Play Engaged.");
+                    nMode = 1;
                 }//////////////////////////
             }
             if(Gdx.input.isKeyJustPressed(Input.Keys.E)) {
@@ -386,18 +414,19 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 menuMusic.play();
                 menuMusic.setLooping(true);//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
             }
-            if (spStart.getBoundingRectangle().overlaps(spTap.getBoundingRectangle()) && Gdx.input.isTouched()) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.S) && justStarted || isTouched && nCursorX >= nWindW/5 && nCursorX <= nWindW/5+spStart.getWidth() && nCursorY <= nWindH/5+spStart.getHeight() && nCursorY >= nWindH/5 && justStarted) {
                 menuMusic.setLooping(false);
                 menuMusic.stop();
                 isMenu = false;
             }
         } else if (isMenu == false) {
             if(nMode == 5) { //A fun 'bug' I came across while color changing was a possible "Shadow" mode.
-                batch.setColor(0, 0, 0, 0.5f); //You can barely see the player, rocks, and no background, just all on a crimson color backdrop.
+                batch.setColor(0.128f, 0.064f, 0.064f, 1f); //You can barely see the player, rocks, and no background, just all on a crimson color backdrop.
                 Gdx.gl.glClearColor(0.256f, 0.128f, 0.128f, 1);
             }
             else {
                 batch.setColor(batch.getColor().r, batch.getColor().g, batch.getColor().b, 0.5f);
+                Gdx.gl.glClearColor(0, 0, 0, 0.5f);
             }
             if(nMode == 4) {
                 batch.setColor(rand.nextInt(255 - 100 + 1), rand.nextInt(255 - 100 + 1), rand.nextInt(255 - 100 + 1), 0.5f);
@@ -425,7 +454,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 bgMusic.play();//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
             }
             if(dRockSpeed > 2 + 1/nMode*2) {
-                dRockSpeed -= 0.00025 - dRockSpeed/49126; //Psychadellic mode is faster than Hard. Have fun!
+                dRockSpeed -= 0.00025 - dRockSpeed/49126; //Psychadellic mode is faster than Hard. Have fun! And then Shadow is even faster.
             }
             //nCursorX = Gdx.input.getX();
             nCursorY = nWindH - Gdx.input.getY();
@@ -439,7 +468,6 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             //Lets you know where you are going when not using a mouse.
             vRet.set(nWindW * 2 / 3, nCursorY - spReticle.getHeight() / 2);
             //Makes background a cool color.
-            Gdx.gl.glClearColor(0, 0, 0, 0.5f);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             //Rotation conversion by inversion. Makes calculations easier afterward by keeping it positive ;)
             if(fCharRot > 0) { //Sets the rotation to a smoother number set for subsequent calculations.
@@ -581,7 +609,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             batch.end();
         }
         //Miscellaneous key sensing below.
-        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+        /*if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
                 menuMusic.stop();
                 bgMusic.stop();
                 if(isMusicClassic) {
@@ -611,7 +639,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                     bgMusic.setVolume(0.2f);
                     isMusicClassic = true;
                 }
-            }
+            }*/
     }
 
 //    public float findAngle(double dX1, double dY1, double dX2, double dY2) {
