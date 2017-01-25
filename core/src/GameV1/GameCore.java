@@ -1,5 +1,7 @@
 package GameV1;
 
+import 
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
@@ -17,6 +19,7 @@ import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.viewport.*;
@@ -26,9 +29,11 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import java.awt.geom.Ellipse2D;
 import com.badlogic.gdx.utils.Timer;
+import java.util.ArrayList;
 import java.util.logging.Level;
 
 public class GameCore extends ApplicationAdapter implements InputProcessor {
@@ -69,9 +74,37 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     Stage disp;////////////////////////////////////////////////
     public Texture imgTap;
     public Sprite spTap;
+    //Storage Variables
+    DataStore data;
+    Json json;
+    //JSONObject obj = new JSONObject();
+    JsonReader reader;
+    FileHandle file, file2;
+    TextField text;
+    String sLetter = "hello", sInput2;
+    ArrayList list;
 
     @Override
     public void create() {
+        
+        
+        //David Engel Code Here That I Am Fixeding
+        data = new DataStore();
+        json = new Json();
+        file = new FileHandle("gamedata.json");
+        reader = new JsonReader();
+        json.writeField(1, sLetter);
+        data.sInput = sLetter;
+        json.toJson(data, file);
+        System.out.println(reader.parse(file).get("sInput").asString());
+        file2 = Gdx.files.internal("gamedata.json");
+        sInput2 = file2.readString();
+        json.readField(1, sInput2, null);
+        /*Config data = new Config();
+        data = json.fromJson(Config.class, sInput2);*/
+        System.out.println(sInput2);
+        
+        
         //PlayerData playerData = new PlayerData();
         //playerData.Init();
         dRockSpeed = 5;
@@ -349,7 +382,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 } else if(nMode == 4) {
                     System.out.println("Setting to Mode-Medium, Type-Psych.");
                     bgMusic = bgMusicPsy;
-                    nLives = nLivesDef/2;//Psycadellic mode gives half of the standard lives, like Intermediate.
+                    nLives = nLivesDef/2;//Psycadellic mode gives half of the standard lives, like Medium difficulty.
                 } else if(nMode == 5) {
                     System.out.println("Setting to Mode-Hardcore.");
                     bgMusic = bgMusicShd;
@@ -712,8 +745,6 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         return false;
     }
 }
-
-
 /*       Boolean fullScreen = Gdx.graphics.isFullscreen();
         Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
         if (fullScreen == true)
