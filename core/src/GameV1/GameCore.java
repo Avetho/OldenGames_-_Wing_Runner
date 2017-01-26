@@ -1,10 +1,8 @@
 package GameV1;
 
-import 
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Camera;
+//import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -12,27 +10,27 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Input.*;
 import com.badlogic.gdx.math.*;
-import java.io.*;
+//import java.io.*;
 import com.badlogic.gdx.utils.*;
-import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.Application.ApplicationType;
+//import com.badlogic.gdx.physics.box2d.*;
+//import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.utils.viewport.*;
+//import com.badlogic.gdx.utils.viewport.*;
 import java.util.Random;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+//import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
+//import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import java.awt.geom.Ellipse2D;
-import com.badlogic.gdx.utils.Timer;
+//import java.awt.geom.Ellipse2D;
+//import com.badlogic.gdx.utils.Timer;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
@@ -48,7 +46,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
     public SpriteBatch batch; //To draw all the things.
     public ShapeRenderer renderHB; //To render all the shapes, of which are none as of yet.
     public Texture imgReticle, imgSprite, imgSprite2, imgObstacle, imgObstacle2, imgBg, imgBg2, imgPause, imgBox, imgMenu, imgMenuInv, imgStart, imgMusic, imgExit, imgMode; //All that you see are belong to these.
-    public Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG, spStart, spMusic, spExit, spMode, spHitRestore; //All the stuff are belong to here.
+    public Sprite spReticle, spChar, spObs1, spObs2, spObs3, spObs4, spObs5, spBG, spBox, spMenuBG, spStart, spMusic, spExit, spMode, spHitRestore, spPause; //All the stuff are belong to here.
     public int nCursorX, nCursorY, nWindW, nWindH, nRockX1, nRockX2, nRockX3; //More generic variables.
     public float fCharRot, fCharMove, fCharAdditive, fPosX; //Generic variables for the game.
     public boolean isTouch, isPaused, isMenu, isMusicOn, isMMusic, isMusicEnable, isMusicClassic; //If you are doing these things.
@@ -89,24 +87,25 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         
         
         //David Engel Code Here That I Am Fixeding
-        data = new DataStore();
-        json = new Json();
-        file = new FileHandle("gamedata.json");
-        reader = new JsonReader();
-        json.writeField(1, sLetter);
-        data.sInput = sLetter;
-        json.toJson(data, file);
-        System.out.println(reader.parse(file).get("sInput").asString());
-        file2 = Gdx.files.internal("gamedata.json");
-        sInput2 = file2.readString();
-        json.readField(1, sInput2, null);
-        /*Config data = new Config();
-        data = json.fromJson(Config.class, sInput2);*/
-        System.out.println(sInput2);
+//        data = new DataStore();
+//        json = new Json();
+//        file = new FileHandle("gamedata.json");
+//        reader = new JsonReader();
+//        json.writeField(1, sLetter);
+//        data.sInput = sLetter;
+//        json.toJson(data, file);
+//        System.out.println(reader.parse(file).get("sInput").asString());
+//        file2 = Gdx.files.internal("gamedata.json");
+//        sInput2 = file2.readString();
+//        json.readField(1, sInput2, null);
+//        /*Config data = new Config();
+//        data = json.fromJson(Config.class, sInput2);*/
+//        System.out.println(sInput2);
         
         
         //PlayerData playerData = new PlayerData();
         //playerData.Init();
+        
         dRockSpeed = 5;
         nMode = 1;
         nTime = 0;
@@ -152,7 +151,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         renderHB = new ShapeRenderer();
         imgMenu = new Texture("Main_Menu2.png");
         imgMenuInv = new Texture("Main_Menu2-Invis.png");
-        imgPause = new Texture("pausedImg.png");
+        //imgPause = new Texture("pausedImg.png");
         imgReticle = new Texture("badlogic.jpg");
         imgSprite = new Texture("characterSprite1.png");
         imgSprite2 = new Texture("characterSprite0.png");
@@ -165,6 +164,7 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         imgMusic = new Texture("MusicButton.png");
         imgExit = new Texture("ExitButton.png");
         imgMode = new Texture("ModeButton.png");
+        imgPause = new Texture("PauseButton.png");
         spMenuBG = new Sprite(imgMenu);
         spMenuBG.setSize(nWindW, nWindH);
         spBox = new Sprite(imgBox);
@@ -187,6 +187,9 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         spMode = new Sprite(imgMode);
         spMode.setOrigin(nWindW/9, nWindH/6);
         spMode.setBounds(nWindW/9, nWindH/6, spMode.getWidth(), spMode.getHeight());
+        spPause = new Sprite(imgPause);
+        spPause.setOrigin(nWindW-nWindW/10, nWindH-nWindH/10);
+        spPause.setBounds(nWindW-nWindW/10, nWindH-nWindH/10, spPause.getWidth(), spPause.getHeight());
         
         
 //        acStart = new Actor();
@@ -314,11 +317,23 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             if(!isTouched) {
                 System.out.println("Touched.");
                 isTouched = true;
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException ex) {
+                    System.out.println("Uh oh, something happened.");
+                    java.util.logging.Logger.getLogger(GameCore.class.getName()).log(Level.INFO, null, ex);
+                }
             }
         } else {
             if(isTouched) {
                 System.out.println("Untouched.");
                 isTouched = false;
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException ex) {
+                    System.out.println("Uh oh, something happened.");
+                    java.util.logging.Logger.getLogger(GameCore.class.getName()).log(Level.INFO, null, ex);
+                }
             }
         }
         batch.begin();
@@ -326,18 +341,15 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
         spTap.draw(batch);
         batch.end();
         batch.setColor(batch.getColor().r, batch.getColor().g, batch.getColor().b, 0.5f);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
-            if (isMenu == false) {
-                isMenu = true;
-            } else {
-                batch.flush();
-                batch.dispose();
-                Gdx.input.vibrate(10);
-                System.out.println("Goodbye! 8)");
-                System.exit(0);
-            }
-        }
         if (isMenu) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.A) || isTouched && nCursorX >= nWindW/2 && nCursorX <= nWindW/2+spMode.getWidth() && nCursorY >= nWindH-nWindH/5-spMode.getHeight() && nCursorY <= nWindH-nWindH/5) {
+                    isMenu = true;
+                    batch.flush();
+                    batch.dispose();
+                    Gdx.input.vibrate(10);
+                    System.out.println("Goodbye! 8)");
+                    System.exit(0);
+            }
             
             
 //            disp.getActors();
@@ -351,13 +363,15 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             
             
             batch.begin();
-            batch.draw(spStart, nWindW/5, nWindH/5);
-            batch.draw(spMusic, nWindW-nWindW/5, nWindH/5);
             batch.draw(spExit, nWindW/2, nWindH/5);
+            batch.draw(spStart, nWindW/5, nWindH/5);
             if(justStarted) {
+                //batch.draw(spMusic, nWindW-nWindW/5, nWindH/5);
                 batch.draw(spMode, nWindW/9, nWindH/6);
             }
             batch.end();
+            nCursorX = Gdx.input.getX();
+            nCursorY = Gdx.input.getY();
             if(Gdx.input.isKeyJustPressed(Input.Keys.D) && justStarted || isTouched && nCursorX >= nWindW/9 && nCursorX <= nWindW/9+spMode.getWidth() && nCursorY >= nWindH-nWindH/6-spMode.getHeight() && nCursorY <= nWindH-nWindH/6 && justStarted) {
                 System.out.println("Added one to mode value.");
                 nMode++;
@@ -447,12 +461,17 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
                 menuMusic.play();
                 menuMusic.setLooping(true);//music code came from http://stackoverflow.com/questions/27767121/how-to-play-music-in-loop-in-libgdx
             }
-            if (Gdx.input.isKeyJustPressed(Input.Keys.S) && justStarted || isTouched && nCursorX >= nWindW/5 && nCursorX <= nWindW/5+spStart.getWidth() && nCursorY <= nWindH/5+spStart.getHeight() && nCursorY >= nWindH/5 && justStarted) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.S) || isTouched && nCursorX >= nWindW/5 && nCursorX <= nWindW/5+spStart.getWidth() && nCursorY >= nWindH-nWindH/5-spStart.getHeight() && nCursorY <= nWindH-nWindH/5) {
                 menuMusic.setLooping(false);
                 menuMusic.stop();
                 isMenu = false;
             }
         } else if (isMenu == false) {
+            nCursorX = Gdx.input.getX();
+            nCursorY = Gdx.input.getY();
+            if (Gdx.input.isKeyJustPressed(Input.Keys.A) || isTouched && nCursorX >= nWindW-nWindW/10 && nCursorX <= nWindW-nWindW/10+spStart.getWidth() && nCursorY >= nWindH/10-spStart.getHeight() && nCursorY <= nWindH/10) {
+                    isMenu = true;
+            }
             if(nMode == 5) { //A fun 'bug' I came across while color changing was a possible "Shadow" mode.
                 batch.setColor(0.128f, 0.064f, 0.064f, 1f); //You can barely see the player, rocks, and no background, just all on a crimson color backdrop.
                 Gdx.gl.glClearColor(0.256f, 0.128f, 0.128f, 1);
@@ -624,6 +643,8 @@ public class GameCore extends ApplicationAdapter implements InputProcessor {
             //batch.begin();
             
             batch.draw(spReticle, vRet.x, vRet.y, spReticle.getOriginX(), spReticle.getOriginY(), spReticle.getWidth(), spReticle.getHeight(), spReticle.getScaleX(), spReticle.getScaleY(), spReticle.getRotation());
+            
+            batch.draw(spPause, nWindW-nWindW/10, nWindH-nWindH/10);
             
             fontGeneric.draw(batch, "Score: " + Integer.toString(nScore), nWindW/50, nWindH);
             fontGeneric.draw(batch, "Lives: " + Integer.toString(nLives), nWindW/6, nWindH);
